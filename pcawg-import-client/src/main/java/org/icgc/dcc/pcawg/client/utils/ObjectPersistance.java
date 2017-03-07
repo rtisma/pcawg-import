@@ -1,5 +1,5 @@
 
-package org.icgc.dcc.pcawg.client.core;
+package org.icgc.dcc.pcawg.client.utils;
 import lombok.Cleanup;
 import lombok.NoArgsConstructor;
 import lombok.val;

@@ -12,11 +12,12 @@ import org.icgc.dcc.pcawg.client.download.fetcher.Fetcher;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkState;
+import static lombok.AccessLevel.PRIVATE;
 
 /**
  * TODO: ditch Fetcher dependancy, and directly depend on FileMetaDataContext, and just make this decorator a decorator for FileMetaDataContext
  */
-@RequiredArgsConstructor
+@RequiredArgsConstructor(access = PRIVATE)
 public class SelectedFilesFetcherDecorator implements Fetcher {
 
   public static SelectedFilesFetcherDecorator newSelectedFilesFetcherDecorator(final Fetcher fetcher, final List<String> orderedFilenames){

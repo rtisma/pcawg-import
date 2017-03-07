@@ -8,7 +8,9 @@ import lombok.val;
 import org.icgc.dcc.pcawg.client.core.model.metadata.FileMetaDataContext;
 import org.icgc.dcc.pcawg.client.download.fetcher.Fetcher;
 
-@RequiredArgsConstructor
+import static lombok.AccessLevel.PRIVATE;
+
+@RequiredArgsConstructor(access = PRIVATE)
 public class SSMFetcherDecorator implements Fetcher {
   private static final String SSM_DATA_TYPE = "SSM";
 

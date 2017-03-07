@@ -9,7 +9,7 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.ObjectPersistance;
+import org.icgc.dcc.pcawg.client.utils.ObjectPersistance;
 
 import java.io.IOException;
 import java.io.Serializable;

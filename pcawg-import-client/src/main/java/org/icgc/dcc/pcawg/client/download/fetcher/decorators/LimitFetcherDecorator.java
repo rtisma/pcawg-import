@@ -7,10 +7,12 @@ import lombok.val;
 import org.icgc.dcc.pcawg.client.core.model.metadata.FileMetaDataContext;
 import org.icgc.dcc.pcawg.client.download.fetcher.Fetcher;
 
+import static lombok.AccessLevel.PRIVATE;
+
 /**
  * TODO: ditch Fetcher dependancy, and directly depend on FileMetaDataContext, and just make this decorator a decorator for FileMetaDataContext
  */
-@RequiredArgsConstructor
+@RequiredArgsConstructor(access = PRIVATE)
 public class LimitFetcherDecorator implements Fetcher {
 
   public static LimitFetcherDecorator newLimitFetcherDecorator(final Fetcher fetcher, final int limit){
