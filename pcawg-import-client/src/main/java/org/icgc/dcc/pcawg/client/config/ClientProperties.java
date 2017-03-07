@@ -17,10 +17,12 @@
  */
 package org.icgc.dcc.pcawg.client.config;
 
+import static java.lang.System.getProperty;
+
 public class ClientProperties {
 
   public static final String STORAGE_API = "https://storage.cancercollaboratory.org";
   public static final String PORTAL_API = "https://dcc.icgc.org";
-  public static final String TOKEN = "<fill me>";
+  public static final String TOKEN = getProperty("token");
 
 }

@@ -18,16 +18,20 @@
 package org.icgc.dcc.pcawg.client.download;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import static com.google.common.net.HttpHeaders.AUTHORIZATION;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.TOKEN;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
-import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import static com.google.common.net.HttpHeaders.AUTHORIZATION;
+import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.TOKEN;
+
+@NoArgsConstructor(access = PRIVATE)
 public class Storage {
 
   @SneakyThrows
