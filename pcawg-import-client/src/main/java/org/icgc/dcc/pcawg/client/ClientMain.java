@@ -18,6 +18,10 @@
 package org.icgc.dcc.pcawg.client;
 
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.icgc.dcc.pcawg.client.config.ClientProperties;
+import org.icgc.dcc.pcawg.client.download.fetcher.FetcherFactory;
+import org.icgc.dcc.pcawg.client.download.fetcher.decorators.ConsensusOnlyFetcherDecorator;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -32,6 +36,22 @@ public class ClientMain implements CommandLineRunner {
   public void run(String... args) {
     log.info("****** PCAWG VCF Import Client ******");
     log.info("Passed arguments: {}", Arrays.toString(args));
+
+    val fetcher = FetcherFactory.builder()
+        .setAllFiles(ClientProperties.FETCHER_STORAGE_FILENAME, ClientProperties.FETCHER_FORCE_NEW_FILE)
+        .setLimit(15)
+        .build();
+
+    val consensusOnlyFetcher = ConsensusOnlyFetcherDecorator.newConsensusOnlyFetcherDecorator(fetcher);
+    val fileMetaDataContext = consensusOnlyFetcher.fetch();
+    val storage = Factory.newStorage();
+    for (val fileMetaData : fileMetaDataContext){
+      log.info("Downloading: {}", fileMetaData.getVcfFilenameParser().getFilename());
+      val file = storage.downloadFile(fileMetaData);
+    }
+
+
+
   }
 
   public static void main(String... args) {
