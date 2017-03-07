@@ -3,7 +3,7 @@ package org.icgc.dcc.pcawg.client.download;
 import lombok.NoArgsConstructor;
 
 
-import org.icgc.dcc.pcawg.client.core.model.metadata.FileMetaDataContext;
+import org.icgc.dcc.pcawg.client.model.metadata.FileMetaDataContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Joiner;
@@ -24,7 +24,7 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.PORTAL_API;
 import static org.icgc.dcc.pcawg.client.core.MiscNames.ID;
-import static org.icgc.dcc.pcawg.client.core.model.metadata.FileMetaDataContext.buildFileMetaDataContext;
+import static org.icgc.dcc.pcawg.client.model.metadata.FileMetaDataContext.buildFileMetaDataContext;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class Portal {

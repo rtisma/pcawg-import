@@ -1,8 +1,9 @@
-package org.icgc.dcc.pcawg.client.core;
+package org.icgc.dcc.pcawg.client.model.ssm;
 
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.NonFinal;
+import org.icgc.dcc.pcawg.client.core.ProjectMetadataDAO;
 
 @Value
 @NonFinal

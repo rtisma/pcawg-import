@@ -1,4 +1,6 @@
-package org.icgc.dcc.pcawg.client.core;
+package org.icgc.dcc.pcawg.client.model.ssm.metadata.impl;
+
+import org.icgc.dcc.pcawg.client.core.ProjectMetadataDAO;
 
 public class SSMMetadataImpl extends AbstractCommon implements SSMMetadata{
   private static final String DEFAULT_ASSEMBLY_VERSION = "GRCh37";

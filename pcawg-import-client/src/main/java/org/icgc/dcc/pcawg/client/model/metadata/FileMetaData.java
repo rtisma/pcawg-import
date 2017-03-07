@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.pcawg.client.core.model.metadata;
+package org.icgc.dcc.pcawg.client.model.metadata;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;

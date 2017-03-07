@@ -5,8 +5,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.model.metadata.FileMetaData;
-import org.icgc.dcc.pcawg.client.core.model.metadata.FileMetaDataContext;
+import org.icgc.dcc.pcawg.client.model.metadata.FileMetaData;
+import org.icgc.dcc.pcawg.client.model.metadata.FileMetaDataContext;
 import org.icgc.dcc.pcawg.client.download.fetcher.Fetcher;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.core.model.metadata;
+package org.icgc.dcc.pcawg.client.model.metadata;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;

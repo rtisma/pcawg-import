@@ -1,4 +1,6 @@
-package org.icgc.dcc.pcawg.client.core;
+package org.icgc.dcc.pcawg.client.model.ssm.metadata;
+
+import org.icgc.dcc.pcawg.client.model.ssm.Common;
 
 public interface SSMMetadata extends Common {
 

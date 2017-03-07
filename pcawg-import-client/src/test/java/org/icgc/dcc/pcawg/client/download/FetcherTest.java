@@ -4,7 +4,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.assertj.core.api.Assertions;
-import org.icgc.dcc.pcawg.client.core.model.metadata.FileMetaDataContext;
+import org.icgc.dcc.pcawg.client.model.metadata.FileMetaDataContext;
 import org.icgc.dcc.pcawg.client.download.fetcher.FetcherFactory;
 import org.junit.Test;
 
