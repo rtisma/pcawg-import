@@ -15,23 +15,20 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.pcawg.client.config;
 
-import static java.lang.Boolean.parseBoolean;
-import static java.lang.System.getProperty;
-import static org.icgc.dcc.pcawg.client.core.MiscNames.FALSE;
-import static org.icgc.dcc.pcawg.client.core.MiscNames.TRUE;
+package org.icgc.dcc.pcawg.client.core;
 
-public class ClientProperties {
+import lombok.NoArgsConstructor;
 
-  public static final String STORAGE_API = "https://storage.cancercollaboratory.org";
-  public static final String PORTAL_API = "https://dcc.icgc.org";
-  public static final String TOKEN = getProperty("token");
+import static lombok.AccessLevel.PRIVATE;
 
-  public static final String FETCHER_STORAGE_FILENAME = "allFileMetaDatas.dat";
-  public static final boolean FETCHER_FORCE_NEW_FILE = false;
+@NoArgsConstructor(access = PRIVATE)
+public final class MiscNames {
 
-  public static final boolean STORAGE_PERSIST_MODE = parseBoolean(getProperty("persist_mode", TRUE));
-  public static final String STORAGE_OUTPUT_VCF_STORAGE_DIR = "storedVCFs";
-  public static final boolean STORAGE_BYPASS_MD5_CHECK = parseBoolean(getProperty("bypass_md5_check", FALSE));
+  public static final String ID = "id";
+  public static final String VCF_HEADER = "vcf_header";
+  public static final String DONOR_ID = "donor_id";
+  public static final String FALSE = "false";
+  public static final String TRUE = "true";
+
 }
