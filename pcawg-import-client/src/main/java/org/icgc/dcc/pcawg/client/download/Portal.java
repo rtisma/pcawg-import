@@ -1,8 +1,10 @@
 package org.icgc.dcc.pcawg.client.download;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.Resources;
 import lombok.NoArgsConstructor;
 
-
+import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.pcawg.client.model.metadata.FileMetaDataContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -13,6 +15,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 
+import java.io.File;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
@@ -27,6 +30,7 @@ import static org.icgc.dcc.pcawg.client.core.MiscNames.ID;
 import static org.icgc.dcc.pcawg.client.model.metadata.FileMetaDataContext.buildFileMetaDataContext;
 
 @NoArgsConstructor(access = PRIVATE)
+@Slf4j
 public final class Portal {
 
   /*
@@ -39,6 +43,15 @@ public final class Portal {
   private static final String FILE_FORMAT = "VCF";
   private static final int DEFAULT_BUF_DONOR_SIZE = 50;
   private static final String HITS = "hits";
+  private static final Joiner AMPERSTAND_JOINER = Joiner.on("&");
+  private static final ObjectMapper MAPPER = new ObjectMapper();
+  private static final String RESOURCE_DIR = "src/main/resources";
+
+  public static void main(String[] args){
+    val url = getUrl("consensusOnlyPortalAPIQuery.json",1, 25 );
+    log.info(url.toString());
+
+  }
 
   /**
    * Gets all Collaboratory VCF files.
@@ -160,6 +173,22 @@ public final class Portal {
 
     return new URL(endpoint + "?" + "filters=" + filters + "&" + "size=" + size + "&" + "from=" + from);
   }
+
+  @SneakyThrows
+  private static URL getUrl(String portalAPIQueryJsonFileName, int size, int from) {
+    val endpoint = PORTAL_API + REPOSITORY_FILES_ENDPOINT;
+    val include = "facets";
+    val jsonQuery = MAPPER.readTree(Resources.getResource(RESOURCE_DIR+ File.separator+portalAPIQueryJsonFileName));
+    val filters = URLEncoder.encode( jsonQuery.asText() , UTF_8.name());
+    val urlEnding = AMPERSTAND_JOINER.join(
+        "include="+include,
+        "from="+from,
+        "size="+size,
+        "filters="+filters
+    );
+    return new URL(endpoint + "?" + urlEnding);
+  }
+
 
   @SneakyThrows
   private static JsonNode read(URL url) {
