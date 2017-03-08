@@ -2,19 +2,21 @@ package org.icgc.dcc.pcawg.client.download;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import org.icgc.dcc.common.core.util.stream.Streams;
+import org.icgc.dcc.pcawg.client.core.ObjectNodeConverter;
 import org.icgc.dcc.pcawg.client.vcf.CallerTypes;
 
-import java.util.function.Function;
-
+import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.common.core.json.JsonNodeBuilders.array;
 import static org.icgc.dcc.common.core.json.JsonNodeBuilders.object;
+import static org.icgc.dcc.pcawg.client.utils.Strings.toStringArray;
 
+@RequiredArgsConstructor(access = PRIVATE)
 @Value
 @Slf4j
-public class PcawgVcfPortalAPIQueryCreator {
+public class PcawgVcfPortalAPIQueryCreator implements ObjectNodeConverter {
 
   public static final PcawgVcfPortalAPIQueryCreator newPcawgVcfPortalAPIQueryCreator(CallerTypes callerType){
     return new PcawgVcfPortalAPIQueryCreator(callerType);
@@ -23,6 +25,7 @@ public class PcawgVcfPortalAPIQueryCreator {
   @NonNull
   private final CallerTypes callerType;
 
+  @Override
   public ObjectNode toObjectNode(){
     return object()
         .with("file",
@@ -37,15 +40,6 @@ public class PcawgVcfPortalAPIQueryCreator {
         .end();
   }
 
-  private static <T> String[] toStringArray(final Iterable<T> objects, Function<T, ? extends String> mapping){
-    return Streams.stream(objects)
-        .map(mapping)
-        .toArray(String[]::new);
-  }
-
-  private static <T> String[] toStringArray(final Iterable<T> objects){
-    return toStringArray(objects, Object::toString);
-  }
 
   private ObjectNode createField(String name, String ... values){
     return object()

@@ -20,13 +20,14 @@ package org.icgc.dcc.pcawg.client;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.config.ClientProperties;
-import org.icgc.dcc.pcawg.client.download.fetcher.FetcherFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.util.Arrays;
+
+import static org.icgc.dcc.pcawg.client.Factory.newConsensusPortalFileDownloader;
+import static org.icgc.dcc.pcawg.client.Factory.newTransformer;
 
 @Slf4j
 @SpringBootApplication
@@ -38,17 +39,10 @@ public class ClientMain implements CommandLineRunner {
     log.info("****** PCAWG VCF Import Client ******");
     log.info("Passed arguments: {}", Arrays.toString(args));
 
-    val fetcher = FetcherFactory.builder()
-        .setAllFiles(ClientProperties.FETCHER_STORAGE_FILENAME, ClientProperties.FETCHER_FORCE_NEW_FILE)
-        .setLimit(15)
-        .build();
-
-    val fileMetaDataContext = fetcher.fetch();
-    val storage = Factory.newStorage();
-    for (val fileMetaData : fileMetaDataContext){
-      log.info("Downloading: {}", fileMetaData.getVcfFilenameParser().getFilename());
-      val file = storage.downloadFile(fileMetaData);
-    }
+    val consensusPortalFileDownloader = newConsensusPortalFileDownloader();
+    val transformer = newTransformer();
+    consensusPortalFileDownloader.streamFiles().forEach(f -> log.info(f.getAbsoluteFile().toString()));
+//    consensusPortalFileDownloader.streamFiles().forEach(f -> transformer.transform(CONSENSUS));
 
 
 

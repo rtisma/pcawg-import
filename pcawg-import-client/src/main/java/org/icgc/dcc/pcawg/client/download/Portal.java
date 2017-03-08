@@ -37,21 +37,15 @@ public final class Portal {
    * Constants
    */
   private static final String REPOSITORY_FILES_ENDPOINT = "/api/v1/repository/files";
+  private static final Joiner AMPERSTAND_JOINER = Joiner.on("&");
   private static final String DONORS_ENDPOINT = "/api/v1/donors";
   private static final int PORTAL_FETCH_SIZE = 100;
   private static final String REPOSITORY_NAME = "Collaboratory - Toronto";
   private static final String FILE_FORMAT = "VCF";
   private static final int DEFAULT_BUF_DONOR_SIZE = 50;
   private static final String HITS = "hits";
-  private static final Joiner AMPERSTAND_JOINER = Joiner.on("&");
   private static final ObjectMapper MAPPER = new ObjectMapper();
   private static final String RESOURCE_DIR = "src/main/resources";
-
-  public static void main(String[] args){
-    val url = getUrl("consensusOnlyPortalAPIQuery.json",1, 25 );
-    log.info(url.toString());
-
-  }
 
   /**
    * Gets all Collaboratory VCF files.

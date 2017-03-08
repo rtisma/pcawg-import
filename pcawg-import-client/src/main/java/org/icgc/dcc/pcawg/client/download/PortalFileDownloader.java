@@ -15,9 +15,45 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.pcawg.client.core;
+package org.icgc.dcc.pcawg.client.download;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import lombok.val;
+import org.icgc.dcc.pcawg.client.model.metadata.FileMetaData;
+
+import java.io.File;
+import java.util.List;
+import java.util.stream.Stream;
+
+import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
+
+@RequiredArgsConstructor(access =  PRIVATE)
+@Value
 public class Importer {
 
+  public static final Importer newImporter(final PortalNew portal, final Storage storage){
+    return new Importer(portal, storage);
+  }
+
+  @NonNull
+  private final PortalNew portal;
+
+  @NonNull
+  private final Storage storage;
+
+  public Stream<File> streamFiles() {
+    return getFileMetaDatas().stream()
+        .map(storage::downloadFile);
+  }
+
+  private List<FileMetaData> getFileMetaDatas(){
+    val fileMetas = portal.getFileMetas();
+    return fileMetas.stream()
+        .map(FileMetaData::buildFileMetaData)
+        .collect(toImmutableList());
+  }
 
 }
