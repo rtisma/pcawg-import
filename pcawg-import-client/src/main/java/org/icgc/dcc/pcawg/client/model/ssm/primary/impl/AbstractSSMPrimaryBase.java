@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.model.ssm.primary;
+package org.icgc.dcc.pcawg.client.model.ssm.primary.impl;
 
 import htsjdk.variant.variantcontext.VariantContext;
 import lombok.Getter;
@@ -6,6 +6,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.core.ProjectMetadataDAO;
+import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static lombok.AccessLevel.PROTECTED;

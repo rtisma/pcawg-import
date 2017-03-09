@@ -2,7 +2,6 @@ package org.icgc.dcc.pcawg.client.model.ssm.primary.impl;
 
 import htsjdk.variant.variantcontext.VariantContext;
 import org.icgc.dcc.pcawg.client.core.ProjectMetadataDAO;
-import org.icgc.dcc.pcawg.client.model.ssm.primary.AbstractSSMPrimaryBase;
 
 public class IndelSSMPrimary extends AbstractSSMPrimaryBase {
 
