@@ -27,6 +27,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import java.util.Arrays;
 
 import static org.icgc.dcc.pcawg.client.Factory.newConsensusPortalFileDownloader;
+import static org.icgc.dcc.pcawg.client.Factory.newProjectMetadataDAO;
 import static org.icgc.dcc.pcawg.client.Factory.newTransformer;
 
 @Slf4j
@@ -39,10 +40,21 @@ public class ClientMain implements CommandLineRunner {
     log.info("****** PCAWG VCF Import Client ******");
     log.info("Passed arguments: {}", Arrays.toString(args));
 
+    val projectMetadataDAO = newProjectMetadataDAO();
     val consensusPortalFileDownloader = newConsensusPortalFileDownloader();
     val transformer = newTransformer();
-    consensusPortalFileDownloader.streamFiles().forEach(f -> log.info(f.getAbsoluteFile().toString()));
-//    consensusPortalFileDownloader.streamFiles().forEach(f -> transformer.transform(CONSENSUS));
+    int count = 0;
+    for(val fileContext : consensusPortalFileDownloader){
+      if (count++ > 5){
+        break;
+      }
+      val file = fileContext.getFile();
+      val fileMetaData = fileContext.getFileMetaData();
+      log.info("AbsFile: {}\t\tFMD: {}", file.getAbsoluteFile().toString(), fileMetaData);
+
+    }
+//    consensusPortalFileDownloader.stream().forEach(f -> log.info(f.getAbsoluteFile().toString()));
+//    consensusPortalFileDownloader.stream().forEach(f -> transformer.transform(CONSENSUS));
 
 
 

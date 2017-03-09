@@ -20,10 +20,12 @@ package org.icgc.dcc.pcawg.client.download;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import lombok.experimental.NonFinal;
 import lombok.val;
+import org.icgc.dcc.pcawg.client.model.metadata.FileContext;
 import org.icgc.dcc.pcawg.client.model.metadata.FileMetaData;
 
-import java.io.File;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -32,7 +34,7 @@ import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 
 @RequiredArgsConstructor(access =  PRIVATE)
 @Value
-public class PortalFileDownloader {
+public class PortalFileDownloader implements Iterable<FileContext> {
 
   public static final PortalFileDownloader newPortalFileDownloader(final PortalNew portal, final Storage storage){
     return new PortalFileDownloader(portal, storage);
@@ -44,16 +46,47 @@ public class PortalFileDownloader {
   @NonNull
   private final Storage storage;
 
-  public Stream<File> streamFiles() {
-    return getFileMetaDatas().stream()
-        .map(storage::downloadFile);
+  @NonFinal
+  private List<FileMetaData> fileMetaDatas = null;
+
+  @Override
+  public Iterator<FileContext> iterator() {
+    val iterator = getFileMetaDatas().iterator();
+    return new Iterator<FileContext>(){
+
+      @Override
+      public boolean hasNext() {
+        return iterator.hasNext();
+      }
+
+      @Override
+      public FileContext next() {
+        return createFileContext(iterator.next());
+      }
+    };
   }
 
+  public Stream<FileContext> stream() {
+    return getFileMetaDatas().stream()
+        .map(this::createFileContext);
+  }
+
+  //Lazy loading
   private List<FileMetaData> getFileMetaDatas(){
-    val fileMetas = portal.getFileMetas();
-    return fileMetas.stream()
-        .map(FileMetaData::buildFileMetaData)
-        .collect(toImmutableList());
+    if (fileMetaDatas == null){
+      val fileMetas = portal.getFileMetas();
+      this.fileMetaDatas = fileMetas.stream()
+          .map(FileMetaData::buildFileMetaData)
+          .collect(toImmutableList());
+    }
+    return fileMetaDatas;
+  }
+
+  private  FileContext createFileContext(FileMetaData fileMetaData){
+    return FileContext.builder()
+        .file(storage.downloadFile(fileMetaData))
+        .fileMetaData(fileMetaData)
+        .build();
   }
 
 }
