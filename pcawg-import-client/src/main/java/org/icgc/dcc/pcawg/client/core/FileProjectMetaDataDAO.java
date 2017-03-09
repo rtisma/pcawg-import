@@ -16,7 +16,6 @@ import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
-import static org.icgc.dcc.pcawg.client.core.FileProjectMetaDataDAO.SampleSheetModel.newSampleSheetModelFromTSVLine;
 import static org.icgc.dcc.pcawg.client.core.ProjectMetadataDAO.isUSProject;
 
 @RequiredArgsConstructor
@@ -195,41 +194,29 @@ public class FileProjectMetaDataDAO implements ProjectMetadataDAO {
 
   }
 
-  @SneakyThrows
-  private List<SampleSheetModel> readSampleSheet2(){
-    // check filename exists
-    // for each line, create model and store in List
-    val file = new File(sampleSheetFilename);
-    checkState(file.exists(), "File %s DNE", sampleSheetFilename);
-    val br = new BufferedReader(new FileReader(file));
-    String line;
-    val builder = ImmutableList.<SampleSheetModel>builder();
-    while((line = br.readLine()) != null){
-      builder.add(newSampleSheetModelFromTSVLine(line));
-    }
-    br.close();
-    return builder.build();
-  }
-
   private List<SampleSheetModel> readSampleSheet(){
-    return readTsv(sampleSheetFilename, SampleSheetModel::newSampleSheetModelFromTSVLine);
+    return readTsv(sampleSheetFilename, true, SampleSheetModel::newSampleSheetModelFromTSVLine);
   }
 
   private List<Uuid2BarcodeSheetModel> readUuid2BarcodeSheet(){
-    return readTsv(uuid2BarcodeSheetFilename, Uuid2BarcodeSheetModel::newUuid2BarcodeSheetModelFromTSVLine);
+    return readTsv(uuid2BarcodeSheetFilename, false, Uuid2BarcodeSheetModel::newUuid2BarcodeSheetModelFromTSVLine);
   }
 
   @SneakyThrows
-  private static <T> List<T> readTsv(String filename, Function<String, T > lineConvertionFunctor){
-    // check filename exists
-    // for each line, create model and store in List
+  private static <T> List<T> readTsv(@NonNull  String filename,
+      final boolean hasHeader,
+      @NonNull Function<String, T > lineConvertionFunctor){
     val file = new File(filename);
     checkState(file.exists(), "File %s DNE", filename);
     val br = new BufferedReader(new FileReader(file));
     String line;
     val builder = ImmutableList.<T>builder();
+    boolean skipLine = hasHeader;
     while((line = br.readLine()) != null){
-      builder.add(lineConvertionFunctor.apply(line));
+      if (!skipLine) {
+        builder.add(lineConvertionFunctor.apply(line));
+        skipLine = false;
+      }
     }
     br.close();
     return builder.build();
