@@ -17,6 +17,7 @@ import java.util.List;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.pcawg.client.core.FileProjectMetaDataDAO.SampleSheetModel.newSampleSheetModelFromTSVLine;
+import static org.icgc.dcc.pcawg.client.core.ProjectMetadataDAO.isUSProject;
 
 @RequiredArgsConstructor
 public class FileProjectMetaDataDAO implements ProjectMetadataDAO {
@@ -55,6 +56,7 @@ public class FileProjectMetaDataDAO implements ProjectMetadataDAO {
     private static final int SUBMITTER_SAMPLE_ID_POS = 8;
     private static final int DCC_SPECIMEN_TYPE = 10;
     private static final int LIBRARY_STRATEGY = 11;
+    private static final int DCC_PROJECT_CODE= 4;
     private static final int MAX_NUM_COLUMNS = 12;
 
 
@@ -73,6 +75,8 @@ public class FileProjectMetaDataDAO implements ProjectMetadataDAO {
     @NonNull
     private final String libraryStrategy;
 
+    @NonNull
+    private final String dccProjectCode;
 
     public static SampleSheetModel newSampleSheetModelFromTSVLine(String tsvLine){
       val array = tsvLine.split("\t");
@@ -81,6 +85,7 @@ public class FileProjectMetaDataDAO implements ProjectMetadataDAO {
           .aliquotId(array[ALIQUOT_ID_POS])
           .dccSpecimenType(array[DCC_SPECIMEN_TYPE])
           .donorUniqueId(array[DONOR_UNIQUE_ID_POS])
+          .dccProjectCode(array[DCC_PROJECT_CODE])
           .libraryStrategy(array[LIBRARY_STRATEGY])
           .submitterSampleId(array[SUBMITTER_SAMPLE_ID_POS])
           .build();
@@ -130,7 +135,22 @@ public class FileProjectMetaDataDAO implements ProjectMetadataDAO {
 
   @Override
   public String getAnalyzedSampleId(String aliquot_id) {
-    return null;
+    val isUsProject =  isUSProject(getDccProjectCode(aliquot_id));
+    val result = sampleSheetList.stream()
+        .filter(x -> x.getAliquotId().equals(aliquot_id))
+        .findFirst();
+    checkState(result.isPresent());
+    val submitter_sample_id =  result.get().getSubmitterSampleId();
+
+    if (isUsProject){
+      val result2= uuid2BarcodeSheetList.stream()
+          .filter(x -> x.getUuid().equals(submitter_sample_id))
+          .findFirst();
+      checkState(result2.isPresent());
+      return result2.get().getTcgaBarcode();
+    } else {
+      return submitter_sample_id;
+    }
   }
 
   @Override
@@ -139,9 +159,15 @@ public class FileProjectMetaDataDAO implements ProjectMetadataDAO {
   }
 
 
+  //TODO: This functions assumes all aliquot_ids are UNIQUE (no repeats), so using first occurance. Verify this
   @Override
   public String getDccProjectCode(String aliquot_id) {
-    return null;
+    val result = sampleSheetList.stream()
+        .filter(s -> s.getAliquotId().equals(aliquot_id))
+        .findFirst();
+    checkState(result.isPresent());
+    return result.get().getDccProjectCode();
+
   }
 
   @SneakyThrows
