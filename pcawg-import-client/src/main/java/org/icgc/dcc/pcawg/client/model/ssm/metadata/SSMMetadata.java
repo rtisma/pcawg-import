@@ -1,6 +1,7 @@
 package org.icgc.dcc.pcawg.client.model.ssm.metadata;
 
 import org.icgc.dcc.pcawg.client.model.ssm.Common;
+import org.icgc.dcc.pcawg.client.vcf.CallerTypes;
 
 public interface SSMMetadata extends Common {
 
@@ -10,7 +11,7 @@ public interface SSMMetadata extends Common {
   String getExperimentalProtocol();
   String getBaseCallingAlgorithm();
   String getAlignmentAlgorithm();
-  String getVariationCallingAlgorithm();
+  CallerTypes getVariationCallingAlgorithm();
   String getOtherAnalysisAlgorithm();
   String getSequencingStrategy();
   String getSeqCoverage();

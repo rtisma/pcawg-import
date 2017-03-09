@@ -59,6 +59,13 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 			<optional>true</optional>
 		</dependency>
 
+		<!-- Genomics -->
+		<dependency>
+			<groupId>com.github.samtools</groupId>
+			<artifactId>htsjdk</artifactId>
+			<version>${htsjdk.version}</version>
+		</dependency>
+
 		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -131,6 +138,9 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 		<!-- Versions - Spring -->
 		<spring-boot.version>1.2.5.RELEASE</spring-boot.version>
 		<spring-maven-plugin.version>1.2.5.RELEASE</spring-maven-plugin.version>
+
+		<!-- Versions - Genomics -->
+		<htsjdk.version>2.1.0</htsjdk.version>
 
 		<!-- Project Settings -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

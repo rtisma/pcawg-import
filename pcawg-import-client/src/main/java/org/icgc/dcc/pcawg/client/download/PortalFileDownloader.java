@@ -32,10 +32,10 @@ import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 
 @RequiredArgsConstructor(access =  PRIVATE)
 @Value
-public class Importer {
+public class PortalFileDownloader {
 
-  public static final Importer newImporter(final PortalNew portal, final Storage storage){
-    return new Importer(portal, storage);
+  public static final PortalFileDownloader newPortalFileDownloader(final PortalNew portal, final Storage storage){
+    return new PortalFileDownloader(portal, storage);
   }
 
   @NonNull
