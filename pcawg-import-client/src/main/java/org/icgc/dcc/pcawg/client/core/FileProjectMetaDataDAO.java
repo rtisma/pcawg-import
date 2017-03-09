@@ -82,8 +82,9 @@ public class FileProjectMetaDataDAO implements ProjectMetadataDAO {
     private final String dccProjectCode;
 
     public static SampleSheetModel newSampleSheetModelFromTSVLine(String tsvLine){
-      val array = tsvLine.split("\t");
-      checkArgument(array.length == MAX_NUM_COLUMNS);
+
+      val array = tsvLine.trim().split("\t");
+      checkArgument(array.length == MAX_NUM_COLUMNS, "Max allowed columns is %s, but input columns is %s", MAX_NUM_COLUMNS, array.length);
       return SampleSheetModel.builder()
           .aliquotId(array[ALIQUOT_ID_POS])
           .dccSpecimenType(array[DCC_SPECIMEN_TYPE])

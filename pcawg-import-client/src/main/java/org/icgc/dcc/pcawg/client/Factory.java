@@ -36,7 +36,8 @@ public class Factory {
   }
 
   public static Transformer newTransformer(){
-    return new Transformer();
+    return null;
+//    return new Transformer();
   }
 
 }
