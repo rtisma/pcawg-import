@@ -1,9 +1,18 @@
 package org.icgc.dcc.pcawg.client.tsv.converters;
 
-public interface TSVConverter {
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
-  String toTSVData();
+public interface TSVConverter<T> {
 
-  String toTSVHeader();
+  static final Collector<CharSequence, ?, String> TSV_STRING_COLLECTOR = Collectors.joining("\t");
+
+  default Collector<CharSequence,?, String> getTsvCollectorInstance(){
+    return TSV_STRING_COLLECTOR;
+  }
+
+  String toTSVData(T t);
+
+  String toTSVHeader(T t);
 
 }
