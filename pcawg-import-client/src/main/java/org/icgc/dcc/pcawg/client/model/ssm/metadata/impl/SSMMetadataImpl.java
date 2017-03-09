@@ -1,8 +1,8 @@
 package org.icgc.dcc.pcawg.client.model.ssm.metadata.impl;
 
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.icgc.dcc.pcawg.client.core.ProjectMetadataDAO;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.vcf.CallerTypes;
 
@@ -19,21 +19,16 @@ public class SSMMetadataImpl implements SSMMetadata {
   private final CallerTypes callerType;
 
   @NonNull
-  private final ProjectMetadataDAO projectMetadataDAO;
+  @Getter
+  private final String matchedSampleId;
 
+  @NonNull
+  @Getter
+  private final String analysisId;
 
-  public String getMatchedSampleId() {
-    return projectMetadataDAO.getMatchedSampleId(aliquotId);
-  }
-
-  public String getAnalysisId() {
-    return projectMetadataDAO.getAnalysisId(aliquotId);
-  }
-
-  public String getAnalyzedSampleId() {
-    return projectMetadataDAO.getAnalyzedSampleId(aliquotId);
-  }
-
+  @NonNull
+  @Getter
+  private final String analyzedSampleId;
 
   @Override
   public String getAssemblyVersion() {

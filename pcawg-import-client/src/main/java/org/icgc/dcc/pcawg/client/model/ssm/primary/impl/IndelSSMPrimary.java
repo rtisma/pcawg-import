@@ -1,14 +1,11 @@
 package org.icgc.dcc.pcawg.client.model.ssm.primary.impl;
 
 import htsjdk.variant.variantcontext.VariantContext;
-import org.icgc.dcc.pcawg.client.core.ProjectMetadataDAO;
 
 public class IndelSSMPrimary extends AbstractSSMPrimaryBase {
 
-  public IndelSSMPrimary(String aliquotId,
-      VariantContext variant,
-      ProjectMetadataDAO projectMetadataDAO) {
-    super(aliquotId, variant, projectMetadataDAO);
+  public IndelSSMPrimary(VariantContext variant, String analysisId, String analyzedSampleId) {
+    super(variant, analysisId, analyzedSampleId);
   }
 
   @Override

@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.ProjectMetadataDAO;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -14,7 +13,6 @@ import static lombok.AccessLevel.PROTECTED;
 /**
  * Common implementations for all subclasses of AbstractSSMPrimaryBase
  */
-@Getter(PROTECTED)
 @RequiredArgsConstructor
 public abstract class AbstractSSMPrimaryBase implements SSMPrimary {
 
@@ -22,23 +20,16 @@ public abstract class AbstractSSMPrimaryBase implements SSMPrimary {
   private static final String DEFAULT_VERIFICATION_STATUS = "not tested";
 
   @NonNull
-  private final String aliquotId;
-
-  @NonNull
+  @Getter(PROTECTED)
   private final VariantContext variant;
 
   @NonNull
-  private final ProjectMetadataDAO projectMetadataDAO;
+  @Getter
+  private final String analysisId;
 
-  @Override
-  public String getAnalysisId() {
-    return projectMetadataDAO.getAnalysisId(aliquotId);
-  }
-
-  @Override
-  public String getAnalyzedSampleId() {
-    return projectMetadataDAO.getAnalyzedSampleId(aliquotId);
-  }
+  @NonNull
+  @Getter
+  private final String analyzedSampleId;
 
   @Override
   public String getChromosome() {
