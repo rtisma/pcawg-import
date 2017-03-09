@@ -1,15 +1,15 @@
 package org.icgc.dcc.pcawg.client.core;
 
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import lombok.val;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 @RequiredArgsConstructor
 public class FileProjectMetaDataDAO implements ProjectMetadataDAO {
-  public static enum YO{
-   FIRST,
-    SECOND;
-  }
-
 
   /**
    * - get dcc_project_code (https://raw.githubusercontent.com/ICGC-TCGA-PanCancer/pcawg-operations/develop/lists/sample_sheet/pcawg_sample_sheet.2016-10-18.tsv)  using aliquite id
@@ -25,6 +25,82 @@ public class FileProjectMetaDataDAO implements ProjectMetadataDAO {
    *
    *
    */
+
+  // create pojo for each file
+      // need following fields:
+      // - subitter_sample_id, donor_uniqie_id, aliquot_id, dcc_specimen_type, library_strategy
+  // open files, read everyline and split by tab, and load into respecive pojos
+  //
+
+  /**
+   * Use opencsv to bind (or marshal) TSVs (or CSVs that use tabs) to Beans, and can parse whole csv file into list of beans, where each bean can represent a row, and then can store List of beans in memory and do what ever aggrigations needed
+   * Refer to http://opencsv.sourceforge.net/
+   */
+  @Builder
+  @Value
+  public static class SampleSheetModel {
+
+    private static final int ALIQUOT_ID_POS = 5;
+    private static final int DONOR_UNIQUE_ID_POS = 0;
+    private static final int SUBMITTER_SAMPLE_ID_POS = 8;
+    private static final int DCC_SPECIMEN_TYPE = 10;
+    private static final int LIBRARY_STRATEGY = 11;
+    private static final int MAX_NUM_COLUMNS = 12;
+
+
+    @NonNull
+    private final String donorUniqueId;
+
+    @NonNull
+    private final String aliquotId;
+
+    @NonNull
+    private final String submitterSampleId;
+
+    @NonNull
+    private final String dccSpecimenType;
+
+    @NonNull
+    private final String libraryStrategy;
+
+
+    public static SampleSheetModel newSampleSheetModelFromTSVLine(String tsvLine){
+      val array = tsvLine.split("\t");
+      checkArgument(array.length == MAX_NUM_COLUMNS);
+      return SampleSheetModel.builder()
+          .aliquotId(array[ALIQUOT_ID_POS])
+          .dccSpecimenType(array[DCC_SPECIMEN_TYPE])
+          .donorUniqueId(array[DONOR_UNIQUE_ID_POS])
+          .libraryStrategy(array[LIBRARY_STRATEGY])
+          .submitterSampleId(array[SUBMITTER_SAMPLE_ID_POS])
+          .build();
+    }
+
+  }
+
+  @Builder
+  @Value
+  public static class Uuid2BarcodeSheetModel{
+    private static final int UUID_POS = 2;
+    private static final int TCGA_BARCODE_POS = 3;
+    private static final int MAX_NUM_COLUMNS = 4;
+
+    @NonNull
+    private final String uuid;
+
+    @NonNull
+    private final String tcgaBarcode;
+
+    public static Uuid2BarcodeSheetModel newUuid2BarcodeSheetModelFromTSVLine(String tsvLine){
+      val array = tsvLine.split("\t");
+      checkArgument(array.length == MAX_NUM_COLUMNS);
+      return Uuid2BarcodeSheetModel.builder()
+          .tcgaBarcode(array[TCGA_BARCODE_POS])
+          .uuid(array[UUID_POS])
+          .build();
+    }
+
+  }
 
   @NonNull
   private final String sampleSheetFilename;
