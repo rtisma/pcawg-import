@@ -111,7 +111,7 @@ public class FileProjectMetaDataDAO implements ProjectMetadataDAO {
     private final String tcgaBarcode;
 
     public static Uuid2BarcodeSheetModel newUuid2BarcodeSheetModelFromTSVLine(String tsvLine){
-      val array = tsvLine.split("\t");
+      val array = tsvLine.trim().split("\t");
       checkArgument(array.length == MAX_NUM_COLUMNS);
       return Uuid2BarcodeSheetModel.builder()
           .tcgaBarcode(array[TCGA_BARCODE_POS])
