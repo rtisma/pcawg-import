@@ -1,12 +1,12 @@
 package org.icgc.dcc.pcawg.client.download;
 
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.FileProjectMetadataDAO;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.pcawg.client.core.FileProjectMetadataDAO.SampleSheetModel.newSampleSheetModelFromTSVLine;
 import static org.icgc.dcc.pcawg.client.core.FileProjectMetadataDAO.Uuid2BarcodeSheetModel.newUuid2BarcodeSheetModelFromTSVLine;
+import static org.icgc.dcc.pcawg.client.core.FileProjectMetadataDAO.newFileProjectMetadataDAOAndDownload;
 
 public class ProjectMetadataDAOTest {
 
@@ -33,7 +33,7 @@ public class ProjectMetadataDAOTest {
 
   @Test
   public void testDownload(){
-    val projectMetadataDAO = FileProjectMetadataDAO.newFileProjectMetadataDAOAndDownload();
+    val projectMetadataDAO = newFileProjectMetadataDAOAndDownload();
     val nonUsId = "10cb8ac6-c622-11e3-bf01-24c6515278c0";
     val usId = "9c70688d-6e43-4520-9262-eaae4e4d597d";
     //Non-US

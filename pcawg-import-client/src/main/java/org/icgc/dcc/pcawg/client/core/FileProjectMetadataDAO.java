@@ -6,11 +6,13 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -22,6 +24,7 @@ import static org.icgc.dcc.pcawg.client.config.ClientProperties.UUID2BARCODE_SHE
 import static org.icgc.dcc.pcawg.client.core.ProjectMetadataDAO.isUSProject;
 import static org.icgc.dcc.pcawg.client.download.Storage.downloadFileByURL;
 
+@Slf4j
 public class FileProjectMetadataDAO implements ProjectMetadataDAO {
 
   private static final String WGS = "WGS";
@@ -226,8 +229,12 @@ public class FileProjectMetadataDAO implements ProjectMetadataDAO {
   }
 
   public static FileProjectMetadataDAO newFileProjectMetadataDAOAndDownload(){
+    val outputDir = Paths.get("").toAbsolutePath().toString();
+    log.info("Downloading [{}] to directory [{}] from url: {}", SAMPLE_SHEET_TSV_FILENAME, outputDir,SAMPLE_SHEET_TSV_URL);
     val sampleSheetFile = downloadFileByURL(SAMPLE_SHEET_TSV_URL, SAMPLE_SHEET_TSV_FILENAME);
+    log.info("Downloading [{}] to directory [{}] from url: {}", UUID2BARCODE_SHEET_TSV_FILENAME, outputDir, UUID2BARCODE_SHEET_TSV_URL);
     val uuid2BarcodeSheetFile = downloadFileByURL(UUID2BARCODE_SHEET_TSV_URL, UUID2BARCODE_SHEET_TSV_FILENAME);
+    log.info("Done downloading, creating FileProjectMetadataDAO");
     return new FileProjectMetadataDAO(SAMPLE_SHEET_TSV_FILENAME, UUID2BARCODE_SHEET_TSV_FILENAME);
   }
 
