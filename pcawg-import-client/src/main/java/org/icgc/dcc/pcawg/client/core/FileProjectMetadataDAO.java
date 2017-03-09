@@ -4,7 +4,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.val;
@@ -16,10 +15,14 @@ import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_FILENAME;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_URL;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.UUID2BARCODE_SHEET_TSV_FILENAME;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.UUID2BARCODE_SHEET_TSV_URL;
 import static org.icgc.dcc.pcawg.client.core.ProjectMetadataDAO.isUSProject;
+import static org.icgc.dcc.pcawg.client.download.Storage.downloadFileByURL;
 
-@RequiredArgsConstructor
-public class FileProjectMetaDataDAO implements ProjectMetadataDAO {
+public class FileProjectMetadataDAO implements ProjectMetadataDAO {
 
   private static final String WGS = "WGS";
   private static final String NORMAL = "normal";
@@ -129,7 +132,7 @@ public class FileProjectMetaDataDAO implements ProjectMetadataDAO {
   private final List<SampleSheetModel> sampleSheetList;
   private final List<Uuid2BarcodeSheetModel> uuid2BarcodeSheetList;
 
-  public FileProjectMetaDataDAO(String sampleSheetFilename, String uuid2BarcodeSheetFilename) {
+  public FileProjectMetadataDAO(String sampleSheetFilename, String uuid2BarcodeSheetFilename) {
     this.sampleSheetFilename = sampleSheetFilename;
     this.uuid2BarcodeSheetFilename = uuid2BarcodeSheetFilename;
     this.sampleSheetList = readSampleSheet();
@@ -142,17 +145,17 @@ public class FileProjectMetaDataDAO implements ProjectMetadataDAO {
     val result = sampleSheetList.stream()
         .filter(x -> x.getAliquotId().equals(aliquot_id))
         .findFirst();
-    checkState(result.isPresent());
-    val submitter_sample_id =  result.get().getSubmitterSampleId();
+    checkState(result.isPresent(), "Could not find first SampleSheet for aliquot_id [%s]", aliquot_id);
+    val submitterSampleId =  result.get().getSubmitterSampleId();
 
     if (isUsProject){
       val result2= uuid2BarcodeSheetList.stream()
-          .filter(x -> x.getUuid().equals(submitter_sample_id))
+          .filter(x -> x.getUuid().equals(submitterSampleId))
           .findFirst();
-      checkState(result2.isPresent());
+      checkState(result2.isPresent(), "Could not find SampleSheet for aliquot_id [%s] with submitter_sample_id [%s]",aliquot_id, submitterSampleId );
       return result2.get().getTcgaBarcode();
     } else {
-      return submitter_sample_id;
+      return submitterSampleId;
     }
   }
 
@@ -162,20 +165,20 @@ public class FileProjectMetaDataDAO implements ProjectMetadataDAO {
     val result = sampleSheetList.stream()
         .filter(x -> x.getAliquotId().equals(aliquot_id))
         .findFirst();
-    checkState(result.isPresent());
+    checkState(result.isPresent(), "Could not find first SampleSheet for aliquot_id [%s]", aliquot_id);
     val donorUniqueId =  result.get().getDonorUniqueId();
     val result2 = sampleSheetList.stream()
         .filter(x -> x.getDonorUniqueId().equals(donorUniqueId))
         .filter(y -> y.getLibraryStrategy().equals(WGS))
         .filter(z -> z.getDccSpecimenType().toLowerCase().contains(NORMAL))
         .findFirst();
-    checkState(result2.isPresent());
+    checkState(result2.isPresent(), "Could not find SampleSheet for aliquot_id [%s] with donor_unique_id [%s] and library_strategy [%s] and dcc_speciment_type containing [%s]",aliquot_id, donorUniqueId, WGS, NORMAL);
     val submitterSampleId = result2.get().getSubmitterSampleId();
     if (isUsProject){
       val result3= uuid2BarcodeSheetList.stream()
           .filter(x -> x.getUuid().equals(submitterSampleId))
           .findFirst();
-      checkState(result2.isPresent());
+      checkState(result3.isPresent(), "Could not find SampleSheet for aliquot_id [%s] with submitter_sample_id [%s]",aliquot_id, submitterSampleId );
       return result3.get().getTcgaBarcode();
     } else {
       return submitterSampleId;
@@ -189,7 +192,7 @@ public class FileProjectMetaDataDAO implements ProjectMetadataDAO {
     val result = sampleSheetList.stream()
         .filter(s -> s.getAliquotId().equals(aliquot_id))
         .findFirst();
-    checkState(result.isPresent());
+    checkState(result.isPresent(), "Could not find first SampleSheet for aliquot_id [%s]", aliquot_id);
     return result.get().getDccProjectCode();
 
   }
@@ -199,7 +202,7 @@ public class FileProjectMetaDataDAO implements ProjectMetadataDAO {
   }
 
   private List<Uuid2BarcodeSheetModel> readUuid2BarcodeSheet(){
-    return readTsv(uuid2BarcodeSheetFilename, false, Uuid2BarcodeSheetModel::newUuid2BarcodeSheetModelFromTSVLine);
+    return readTsv(uuid2BarcodeSheetFilename, true, Uuid2BarcodeSheetModel::newUuid2BarcodeSheetModelFromTSVLine);
   }
 
   @SneakyThrows
@@ -215,11 +218,17 @@ public class FileProjectMetaDataDAO implements ProjectMetadataDAO {
     while((line = br.readLine()) != null){
       if (!skipLine) {
         builder.add(lineConvertionFunctor.apply(line));
-        skipLine = false;
       }
+      skipLine = false;
     }
     br.close();
     return builder.build();
+  }
+
+  public static FileProjectMetadataDAO newFileProjectMetadataDAOAndDownload(){
+    val sampleSheetFile = downloadFileByURL(SAMPLE_SHEET_TSV_URL, SAMPLE_SHEET_TSV_FILENAME);
+    val uuid2BarcodeSheetFile = downloadFileByURL(UUID2BARCODE_SHEET_TSV_URL, UUID2BARCODE_SHEET_TSV_FILENAME);
+    return new FileProjectMetadataDAO(SAMPLE_SHEET_TSV_FILENAME, UUID2BARCODE_SHEET_TSV_FILENAME);
   }
 
 

@@ -1,11 +1,12 @@
 package org.icgc.dcc.pcawg.client.download;
 
 import lombok.val;
+import org.icgc.dcc.pcawg.client.core.FileProjectMetadataDAO;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.icgc.dcc.pcawg.client.core.FileProjectMetaDataDAO.SampleSheetModel.newSampleSheetModelFromTSVLine;
-import static org.icgc.dcc.pcawg.client.core.FileProjectMetaDataDAO.Uuid2BarcodeSheetModel.newUuid2BarcodeSheetModelFromTSVLine;
+import static org.icgc.dcc.pcawg.client.core.FileProjectMetadataDAO.SampleSheetModel.newSampleSheetModelFromTSVLine;
+import static org.icgc.dcc.pcawg.client.core.FileProjectMetadataDAO.Uuid2BarcodeSheetModel.newUuid2BarcodeSheetModelFromTSVLine;
 
 public class ProjectMetadataDAOTest {
 
@@ -28,6 +29,23 @@ public class ProjectMetadataDAOTest {
     val sheet = newUuid2BarcodeSheetModelFromTSVLine(tsvLine);
     assertThat(sheet.getUuid()).isEqualTo("c spaceC 3");
     assertThat(sheet.getTcgaBarcode()).isEqualTo("d spaceD 4");
+  }
+
+  @Test
+  public void testDownload(){
+    val projectMetadataDAO = FileProjectMetadataDAO.newFileProjectMetadataDAOAndDownload();
+    val nonUsId = "10cb8ac6-c622-11e3-bf01-24c6515278c0";
+    val usId = "9c70688d-6e43-4520-9262-eaae4e4d597d";
+    //Non-US
+    assertThat(projectMetadataDAO.getDccProjectCode(nonUsId)).isEqualTo("LIRI-JP");
+    assertThat(projectMetadataDAO.getAnalyzedSampleId(nonUsId)).isEqualTo("RK001_C01");
+    assertThat(projectMetadataDAO.getMatchedSampleId(nonUsId)).isEqualTo("RK001_B01");
+
+    //US
+    assertThat(projectMetadataDAO.getDccProjectCode(usId)).isEqualTo("BRCA-US");
+    assertThat(projectMetadataDAO.getAnalyzedSampleId(usId)).isEqualTo("TCGA-BH-A18R-01A-11D-A19H-09");
+    assertThat(projectMetadataDAO.getMatchedSampleId(usId)).isEqualTo("TCGA-BH-A18R-11A-42D-A19H-09");
+
   }
 
 }

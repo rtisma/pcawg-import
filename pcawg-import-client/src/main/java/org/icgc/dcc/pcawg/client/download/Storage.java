@@ -108,6 +108,18 @@ public class Storage {
   }
 
   @SneakyThrows
+  public static File downloadFileByURL(@NonNull final String urlString, @NonNull final String outputFilename) {
+    val objectUrl = new URL(urlString);
+    val output = Paths.get(outputFilename);
+
+    @Cleanup
+    val input = objectUrl.openStream();
+    copy(input, output, REPLACE_EXISTING);
+
+    return output.toFile();
+  }
+
+  @SneakyThrows
   public File downloadFile(@NonNull final FileMetaData fileMetaData) {
     val objectId = fileMetaData.getObjectId();
     val expectedMD5Sum = fileMetaData.getFileMd5sum();
@@ -150,6 +162,7 @@ public class Storage {
     val object = readObject(connection);
     return getUrl(object);
   }
+
 
   @SneakyThrows
   private static URL getUrl(JsonNode object) {
