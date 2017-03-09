@@ -22,6 +22,9 @@ import static org.icgc.dcc.pcawg.client.core.ProjectMetadataDAO.isUSProject;
 @RequiredArgsConstructor
 public class FileProjectMetaDataDAO implements ProjectMetadataDAO {
 
+  private static final String WGS = "WGS";
+  private static final String NORMAL = "normal";
+
   /**
    * - get dcc_project_code (https://raw.githubusercontent.com/ICGC-TCGA-PanCancer/pcawg-operations/develop/lists/sample_sheet/pcawg_sample_sheet.2016-10-18.tsv)  using aliquite id
    * - determine if US or non-US project
@@ -155,7 +158,28 @@ public class FileProjectMetaDataDAO implements ProjectMetadataDAO {
 
   @Override
   public String getMatchedSampleId(String aliquot_id) {
-    return null;
+    val isUsProject =  isUSProject(getDccProjectCode(aliquot_id));
+    val result = sampleSheetList.stream()
+        .filter(x -> x.getAliquotId().equals(aliquot_id))
+        .findFirst();
+    checkState(result.isPresent());
+    val donorUniqueId =  result.get().getDonorUniqueId();
+    val result2 = sampleSheetList.stream()
+        .filter(x -> x.getDonorUniqueId().equals(donorUniqueId))
+        .filter(y -> y.getLibraryStrategy().equals(WGS))
+        .filter(z -> z.getDccSpecimenType().toLowerCase().contains(NORMAL))
+        .findFirst();
+    checkState(result2.isPresent());
+    val submitterSampleId = result2.get().getSubmitterSampleId();
+    if (isUsProject){
+      val result3= uuid2BarcodeSheetList.stream()
+          .filter(x -> x.getUuid().equals(submitterSampleId))
+          .findFirst();
+      checkState(result2.isPresent());
+      return result3.get().getTcgaBarcode();
+    } else {
+      return submitterSampleId;
+    }
   }
 
 
