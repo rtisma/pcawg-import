@@ -1,14 +1,10 @@
 package org.icgc.dcc.pcawg.client.model.ssm.metadata.impl;
 
-import com.google.common.collect.Maps;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.icgc.dcc.pcawg.client.core.ProjectMetadataDAO;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
-import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadataFieldMapping;
 import org.icgc.dcc.pcawg.client.vcf.CallerTypes;
-
-import java.util.Map;
 
 @RequiredArgsConstructor
 public class SSMMetadataImpl implements SSMMetadata {
@@ -24,8 +20,6 @@ public class SSMMetadataImpl implements SSMMetadata {
 
   @NonNull
   private final ProjectMetadataDAO projectMetadataDAO;
-
-  private final Map<SSMMetadataFieldMapping, SSMMetadataFieldValue> data = Maps.newEnumMap(SSMMetadataFieldMapping.class);
 
 
   public String getMatchedSampleId() {

@@ -40,13 +40,6 @@ public class PcawgVcfPortalAPIQueryCreator implements ObjectNodeConverter {
         .end();
   }
 
-
-  private ObjectNode createField(String name, String ... values){
-    return object()
-        .with(name, createIs(values))
-        .end();
-  }
-
   private ObjectNode createIs(String ... values){
     return object()
         .with("is",
@@ -56,7 +49,5 @@ public class PcawgVcfPortalAPIQueryCreator implements ObjectNodeConverter {
         .end();
 
   }
-
-
 
 }
