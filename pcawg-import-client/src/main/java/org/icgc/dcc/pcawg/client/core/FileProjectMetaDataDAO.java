@@ -1,12 +1,22 @@
 package org.icgc.dcc.pcawg.client.core;
 
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.val;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.List;
+
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.pcawg.client.core.FileProjectMetaDataDAO.SampleSheetModel.newSampleSheetModelFromTSVLine;
 
 @RequiredArgsConstructor
 public class FileProjectMetaDataDAO implements ProjectMetadataDAO {
@@ -106,11 +116,16 @@ public class FileProjectMetaDataDAO implements ProjectMetadataDAO {
   private final String sampleSheetFilename;
 
   @NonNull
-  private final String tcgaBarcodeMappingFilename;
+  private final String uuid2BarcodeSheetFilename;
 
-  @Override
-  public String getMatchedSampleId(String aliquot_id) {
-    return null;
+  private final List<SampleSheetModel> sampleSheetList;
+  private final List<Uuid2BarcodeSheetModel> uuid2BarcodeSheetList;
+
+  public FileProjectMetaDataDAO(String sampleSheetFilename, String uuid2BarcodeSheetFilename) {
+    this.sampleSheetFilename = sampleSheetFilename;
+    this.uuid2BarcodeSheetFilename = uuid2BarcodeSheetFilename;
+    this.sampleSheetList = readSampleSheet();
+    this.uuid2BarcodeSheetList = readUuid2BarcodeSheet();
   }
 
   @Override
@@ -119,8 +134,55 @@ public class FileProjectMetaDataDAO implements ProjectMetadataDAO {
   }
 
   @Override
+  public String getMatchedSampleId(String aliquot_id) {
+    return null;
+  }
+
+
+  @Override
   public String getDccProjectCode(String aliquot_id) {
     return null;
   }
+
+  @SneakyThrows
+  private List<SampleSheetModel> readSampleSheet2(){
+    // check filename exists
+    // for each line, create model and store in List
+    val file = new File(sampleSheetFilename);
+    checkState(file.exists(), "File %s DNE", sampleSheetFilename);
+    val br = new BufferedReader(new FileReader(file));
+    String line;
+    val builder = ImmutableList.<SampleSheetModel>builder();
+    while((line = br.readLine()) != null){
+      builder.add(newSampleSheetModelFromTSVLine(line));
+    }
+    br.close();
+    return builder.build();
+  }
+
+  private List<SampleSheetModel> readSampleSheet(){
+    return readTsv(sampleSheetFilename, SampleSheetModel::newSampleSheetModelFromTSVLine);
+  }
+
+  private List<Uuid2BarcodeSheetModel> readUuid2BarcodeSheet(){
+    return readTsv(uuid2BarcodeSheetFilename, Uuid2BarcodeSheetModel::newUuid2BarcodeSheetModelFromTSVLine);
+  }
+
+  @SneakyThrows
+  private static <T> List<T> readTsv(String filename, Function<String, T > lineConvertionFunctor){
+    // check filename exists
+    // for each line, create model and store in List
+    val file = new File(filename);
+    checkState(file.exists(), "File %s DNE", filename);
+    val br = new BufferedReader(new FileReader(file));
+    String line;
+    val builder = ImmutableList.<T>builder();
+    while((line = br.readLine()) != null){
+      builder.add(lineConvertionFunctor.apply(line));
+    }
+    br.close();
+    return builder.build();
+  }
+
 
 }
