@@ -18,16 +18,19 @@
 package org.icgc.dcc.pcawg.client.vcf;
 
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-public enum SubMutationTypes {
-  cnv, indel, snv_mnv, sv;
+@RequiredArgsConstructor
+public enum DataTypes {
+  INDEL("indel"),
+  SNV_MNV("snv_mnv");
 
-  public boolean equals(@NonNull final String name) {
-    return name().equals(name);
-  }
+  @NonNull
+  private final String name;
 
   @Override
   public String toString() {
     return name();
   }
+
 }

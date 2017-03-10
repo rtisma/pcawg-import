@@ -91,4 +91,10 @@ public class SSMMetadataImpl implements SSMMetadata {
   public String getRawDataAccession() {
     return "NEED_TO_IMPL";
   }
+
+  //For andy, just a placeholder
+  @Override
+  public boolean getPcawgFlag() {
+    return true;
+  }
 }

@@ -4,11 +4,11 @@ import htsjdk.variant.variantcontext.VariantContext;
 
 public class IndelSSMPrimary extends AbstractSSMPrimaryBase {
 
-  public static final IndelSSMPrimary newIndelSSMPrimary(final VariantContext variant, final String analysisId, final String analyzedSampleId) {
+  public static final IndelSSMPrimary newIndelSSMPrimary(final VariantContext variant, final String analysisId, final String analyzedSampleId) throws AttributeDoesNotExistException {
     return new IndelSSMPrimary(variant, analysisId, analyzedSampleId);
   }
 
-  private IndelSSMPrimary(final VariantContext variant, final String analysisId, final String analyzedSampleId) {
+  private IndelSSMPrimary(final VariantContext variant, final String analysisId, final String analyzedSampleId) throws AttributeDoesNotExistException {
     super(variant, analysisId, analyzedSampleId);
   }
 
@@ -18,6 +18,7 @@ public class IndelSSMPrimary extends AbstractSSMPrimaryBase {
     if len(ALT)>len(REF): insertion of <=200bp
     if len(ALT)<len(REF): deletion of <=200bp
      */
+//    getVariant().getReference().getBaseString().length()
     return "NEED_TO_IMPL";
   }
 

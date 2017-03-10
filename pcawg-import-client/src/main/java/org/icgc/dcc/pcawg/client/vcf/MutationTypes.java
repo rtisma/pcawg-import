@@ -18,13 +18,17 @@
 package org.icgc.dcc.pcawg.client.vcf;
 
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public enum MutationTypes {
-  somatic, germline;
+  INSERTION_LTE_200BP("insertion of <=200bp"),
+  DELETION_LTE_200BP("deletion of <=200bp"),
+  SINGLE_BASE_SUBSTITUTION("single base substitution"),
+  MULTIPLE_BASE_SUBSTITUTION("multiple base substitution (>=2bp and <=200bp)");
 
-  public boolean equals(@NonNull final String name) {
-    return name().equals(name);
-  }
+  @NonNull
+  private final String name;
 
   @Override
   public String toString() {

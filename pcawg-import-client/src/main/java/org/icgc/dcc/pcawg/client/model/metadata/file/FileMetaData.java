@@ -25,7 +25,7 @@ import lombok.val;
 import org.icgc.dcc.pcawg.client.download.PortalFiles;
 import org.icgc.dcc.pcawg.client.vcf.CallerTypes;
 import org.icgc.dcc.pcawg.client.vcf.MutationTypes;
-import org.icgc.dcc.pcawg.client.vcf.SubMutationTypes;
+import org.icgc.dcc.pcawg.client.vcf.DataTypes;
 
 import java.io.Serializable;
 import java.util.Comparator;
@@ -101,7 +101,7 @@ public final class FileMetaData implements Serializable {
     return getVcfFilenameParser().getMutationType().equals(type.toString());
   }
 
-  public boolean compare(final SubMutationTypes type) {
+  public boolean compare(final DataTypes type) {
     return getVcfFilenameParser().getSubMutationType().equals(type.toString());
   }
 
@@ -117,7 +117,7 @@ public final class FileMetaData implements Serializable {
     return getVcfFilenameParser().getMutationType().matches(getStartsWithRegex(type.toString()));
   }
 
-  public boolean startsWith(final SubMutationTypes type) {
+  public boolean startsWith(final DataTypes type) {
     return getVcfFilenameParser().getSubMutationType().matches(getStartsWithRegex(type.toString()));
   }
 

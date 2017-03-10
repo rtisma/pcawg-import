@@ -21,7 +21,8 @@ public enum SSMMetadataFieldMapping {
   SEQUENCING_STRATEGY          ("sequencing_strategy", SSMMetadata::getSequencingStrategy),
   SEQ_COVERAGE                 ("seq_coverage", SSMMetadata::getSeqCoverage),
   RAW_DATA_REPOSITORY          ("raw_data_repository", SSMMetadata::getRawDataRepository),
-  RAW_DATA_ACCESSION           ("raw_data_accession", SSMMetadata::getRawDataAccession);
+  RAW_DATA_ACCESSION           ("raw_data_accession", SSMMetadata::getRawDataAccession),
+  PCAWG_FLAG                   ("pcawg_flag", SSMMetadata::getPcawgFlag);
 
   @NonNull
   private final String name;

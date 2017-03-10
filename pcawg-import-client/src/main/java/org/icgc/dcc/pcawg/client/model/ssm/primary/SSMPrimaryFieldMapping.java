@@ -27,7 +27,9 @@ public enum SSMPrimaryFieldMapping {
   VERIFICATION_STATUS                 ("verification_status", SSMPrimary::getVerificationStatus),
   VERIFICATION_PLATFORM               ("verification_platform", SSMPrimary::getVerificationPlatform),
   BIOLOGICAL_VALIDATION_STATUS        ("biological_validation_status", SSMPrimary::getBiologicalValidationStatus),
-  BIOLOGICAL_VALIDATION_PLATFORM      ("biological_validation_platform", SSMPrimary::getBiologicalValidationPlatform);
+  BIOLOGICAL_VALIDATION_PLATFORM      ("biological_validation_platform", SSMPrimary::getBiologicalValidationPlatform),
+  PCAWG_FLAG                          ("pcawg_flag", SSMPrimary::getPcawgFlag);
+
 
   @NonNull
   private final String name;
