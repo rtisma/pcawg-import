@@ -23,7 +23,7 @@ import lombok.Value;
 import lombok.experimental.NonFinal;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.model.metadata.FileContext;
-import org.icgc.dcc.pcawg.client.model.metadata.FileMetaData;
+import org.icgc.dcc.pcawg.client.model.metadata.file.FileMetaData;
 
 import java.util.Iterator;
 import java.util.List;

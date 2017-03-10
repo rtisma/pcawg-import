@@ -3,14 +3,14 @@ package org.icgc.dcc.pcawg.client.download.fetcher.impl;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.model.metadata.FileMetaDataContext;
+import org.icgc.dcc.pcawg.client.model.metadata.file.FileMetaDataContext;
 import org.icgc.dcc.pcawg.client.download.fetcher.Fetcher;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.pcawg.client.model.metadata.FileMetaDataContext.buildFileMetaDataContext;
+import static org.icgc.dcc.pcawg.client.model.metadata.file.FileMetaDataContext.buildFileMetaDataContext;
 import static org.icgc.dcc.pcawg.client.download.Portal.getAllFileMetas;
 
 @RequiredArgsConstructor(access = PRIVATE)

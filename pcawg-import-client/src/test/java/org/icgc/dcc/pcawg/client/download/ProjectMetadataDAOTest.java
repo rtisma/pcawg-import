@@ -4,9 +4,9 @@ import lombok.val;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.icgc.dcc.pcawg.client.core.FileProjectMetadataDAO.newFileProjectMetadataDAOAndDownload;
-import static org.icgc.dcc.pcawg.client.core.SampleSheetModel.newSampleSheetModelFromTSVLine;
-import static org.icgc.dcc.pcawg.client.core.Uuid2BarcodeSheetModel.newUuid2BarcodeSheetModelFromTSVLine;
+import static org.icgc.dcc.pcawg.client.data.FileProjectMetadataDAO.newFileProjectMetadataDAOAndDownload;
+import static org.icgc.dcc.pcawg.client.model.metadata.project.SampleSheetModel.newSampleSheetModelFromTSVLine;
+import static org.icgc.dcc.pcawg.client.model.metadata.project.Uuid2BarcodeSheetModel.newUuid2BarcodeSheetModelFromTSVLine;
 
 public class ProjectMetadataDAOTest {
 

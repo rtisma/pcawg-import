@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.pcawg.client.model.metadata;
+package org.icgc.dcc.pcawg.client.model.metadata.file;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
@@ -66,7 +66,22 @@ public final class FileMetaData implements Serializable {
   @NonNull
   private final PortalVCFFilenameParser vcfFilenameParser;
 
-  public static FileMetaData buildFileMetaData(@NonNull final ObjectNode objectNode) {
+//  @NonNull
+//  private final String dccProjectCode;
+//
+//  @NonNull
+//  private final String analyzedSampleId;
+//
+//  @NonNull
+//  private final String matchedSampleId;
+//
+//  public String getAnalysisId(){
+//    val workflow = vcfFilenameParser.getCallerId();
+//    val dataType = vcfFilenameParser.getSubMutationType();
+//    return UNDERSCORE.join(dccProjectCode, workflow, dataType );
+//  }
+
+  public static FileMetaData buildFileMetaData(@NonNull final ObjectNode objectNode){
     val objectId = PortalFiles.getObjectId(objectNode);
     val fileId = PortalFiles.getFileId(objectNode);
     val sampleId = PortalFiles.getSampleId(objectNode);

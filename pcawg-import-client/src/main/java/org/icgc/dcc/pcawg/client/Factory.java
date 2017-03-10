@@ -1,7 +1,7 @@
 package org.icgc.dcc.pcawg.client;
 
 import lombok.NoArgsConstructor;
-import org.icgc.dcc.pcawg.client.core.ProjectMetadataDAO;
+import org.icgc.dcc.pcawg.client.data.ProjectMetadataDAO;
 import org.icgc.dcc.pcawg.client.download.PortalFileDownloader;
 import org.icgc.dcc.pcawg.client.download.PortalNew;
 import org.icgc.dcc.pcawg.client.download.Storage;
@@ -11,7 +11,7 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_BYPASS_MD5_CHECK;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_OUTPUT_VCF_STORAGE_DIR;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_PERSIST_MODE;
-import static org.icgc.dcc.pcawg.client.core.FileProjectMetadataDAO.newFileProjectMetadataDAOAndDownload;
+import static org.icgc.dcc.pcawg.client.data.FileProjectMetadataDAO.newFileProjectMetadataDAOAndDownload;
 import static org.icgc.dcc.pcawg.client.download.PcawgVcfPortalAPIQueryCreator.newPcawgVcfPortalAPIQueryCreator;
 import static org.icgc.dcc.pcawg.client.download.PortalFileDownloader.newPortalFileDownloader;
 import static org.icgc.dcc.pcawg.client.vcf.CallerTypes.CONSENSUS;

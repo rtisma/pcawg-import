@@ -2,7 +2,7 @@ package org.icgc.dcc.pcawg.client;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.icgc.dcc.pcawg.client.core.ProjectMetadataDAO;
+import org.icgc.dcc.pcawg.client.data.ProjectMetadataDAO;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.tsv.TSVConverter;

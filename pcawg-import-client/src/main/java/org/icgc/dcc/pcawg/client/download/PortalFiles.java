@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import org.icgc.dcc.pcawg.client.model.metadata.PortalVCFFilenameParser;
+import org.icgc.dcc.pcawg.client.model.metadata.file.PortalVCFFilenameParser;
 
 import static lombok.AccessLevel.PRIVATE;
 

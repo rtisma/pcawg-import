@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.model.metadata.FileMetaDataContext;
+import org.icgc.dcc.pcawg.client.model.metadata.file.FileMetaDataContext;
 import org.icgc.dcc.pcawg.client.download.fetcher.Fetcher;
 
 import static lombok.AccessLevel.PRIVATE;

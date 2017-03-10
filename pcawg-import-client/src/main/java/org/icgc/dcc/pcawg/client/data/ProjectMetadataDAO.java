@@ -1,4 +1,6 @@
-package org.icgc.dcc.pcawg.client.core;
+package org.icgc.dcc.pcawg.client.data;
+
+import org.icgc.dcc.pcawg.client.model.metadata.project.ProjectMetadata;
 
 public interface ProjectMetadataDAO {
 
