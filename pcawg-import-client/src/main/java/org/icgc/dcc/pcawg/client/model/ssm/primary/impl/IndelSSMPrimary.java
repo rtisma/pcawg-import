@@ -4,7 +4,11 @@ import htsjdk.variant.variantcontext.VariantContext;
 
 public class IndelSSMPrimary extends AbstractSSMPrimaryBase {
 
-  public IndelSSMPrimary(VariantContext variant, String analysisId, String analyzedSampleId) {
+  public static final IndelSSMPrimary newIndelSSMPrimary(final VariantContext variant, final String analysisId, final String analyzedSampleId) {
+    return new IndelSSMPrimary(variant, analysisId, analyzedSampleId);
+  }
+
+  private IndelSSMPrimary(final VariantContext variant, final String analysisId, final String analyzedSampleId) {
     super(variant, analysisId, analyzedSampleId);
   }
 

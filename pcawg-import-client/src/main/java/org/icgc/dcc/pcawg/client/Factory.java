@@ -44,7 +44,6 @@ public class Factory {
 
   public static ProjectMetadataDAO newProjectMetadataDAO(){
     return newFileProjectMetadataDAOAndDownload();
-
   }
 
 }

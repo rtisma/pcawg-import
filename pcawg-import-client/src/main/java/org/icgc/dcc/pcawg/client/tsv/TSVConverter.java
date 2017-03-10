@@ -13,6 +13,6 @@ public interface TSVConverter<T> {
 
   String toTSVData(T t);
 
-  String toTSVHeader(T t);
+  String toTSVHeader();
 
 }

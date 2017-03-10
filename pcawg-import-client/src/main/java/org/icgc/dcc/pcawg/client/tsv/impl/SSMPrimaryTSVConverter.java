@@ -10,6 +10,10 @@ import static org.icgc.dcc.common.core.util.stream.Streams.stream;
 @NoArgsConstructor
 public class SSMPrimaryTSVConverter implements TSVConverter<SSMPrimary> {
 
+  public static final SSMPrimaryTSVConverter newSSMPrimaryTSVConverter(){
+    return new SSMPrimaryTSVConverter();
+  }
+
   @Override
   public String toTSVData(SSMPrimary ssmPrimary) {
     return stream(SSMPrimaryFieldMapping.values())
@@ -18,7 +22,7 @@ public class SSMPrimaryTSVConverter implements TSVConverter<SSMPrimary> {
   }
 
   @Override
-  public String toTSVHeader(SSMPrimary ssmPrimary) {
+  public String toTSVHeader() {
     return stream(SSMPrimaryFieldMapping.values())
         .map(SSMPrimaryFieldMapping::toString)
         .collect(getTsvCollectorInstance());

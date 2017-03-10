@@ -17,9 +17,12 @@
  */
 package org.icgc.dcc.pcawg.client;
 
+import htsjdk.variant.vcf.VCFFileReader;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.icgc.dcc.common.core.util.Joiners;
+import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.IndelSSMPrimary;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -29,10 +32,17 @@ import java.util.Arrays;
 import static org.icgc.dcc.pcawg.client.Factory.newConsensusPortalFileDownloader;
 import static org.icgc.dcc.pcawg.client.Factory.newProjectMetadataDAO;
 import static org.icgc.dcc.pcawg.client.Factory.newTransformer;
+import static org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.SSMMetadataImpl.newSSMMetadataImpl;
+import static org.icgc.dcc.pcawg.client.tsv.impl.SSMMetadataTSVConverter.newSSMMetadataTSVConverter;
+import static org.icgc.dcc.pcawg.client.tsv.impl.SSMPrimaryTSVConverter.newSSMPrimaryTSVConverter;
 
 @Slf4j
 @SpringBootApplication
 public class ClientMain implements CommandLineRunner {
+
+  private static final boolean REQUIRE_INDEX_CFG = false;
+  private static final boolean ALLOW_MISSING_FIELDS_IN_HEADER_CFG = true;
+  private static final boolean OUTPUT_TRAILING_FORMAT_FIELDS_CFG = true;
 
   @Override
   @SneakyThrows
@@ -42,15 +52,39 @@ public class ClientMain implements CommandLineRunner {
 
     val projectMetadataDAO = newProjectMetadataDAO();
     val consensusPortalFileDownloader = newConsensusPortalFileDownloader();
+    val ssmMetadataTsvConverter = newSSMMetadataTSVConverter();
+    val ssmPrimaryTsvConverter = newSSMPrimaryTSVConverter();
     val transformer = newTransformer();
-    int count = 0;
+    val tsvPrimaryHeader = ssmPrimaryTsvConverter.toTSVHeader();
+    val tsvMetadataHeader = ssmMetadataTsvConverter.toTSVHeader();
+    log.info("MetaDataHeader: {}", tsvMetadataHeader);
+    log.info("PrimaryHeader: {}", tsvPrimaryHeader);
+    int count = 6;
     for(val fileContext : consensusPortalFileDownloader){
       if (count++ > 5){
         break;
       }
       val file = fileContext.getFile();
       val fileMetaData = fileContext.getFileMetaData();
+      val atiquotId =  fileMetaData.getVcfFilenameParser().getObjectId();
+      val dccProjectCode = projectMetadataDAO.getDccProjectCode(atiquotId);
+      val matchedSampleId = projectMetadataDAO.getMatchedSampleId(atiquotId);
+      val analyzedSampleId = projectMetadataDAO.getAnalyzedSampleId(atiquotId);
+      val workflow = fileMetaData.getVcfFilenameParser().getCallerId();
+      val dataType = fileMetaData.getVcfFilenameParser().getSubMutationType();
+      val analysisId = Joiners.UNDERSCORE.join(dccProjectCode, workflow, dataType );
+
+      val ssmMetadata = newSSMMetadataImpl(atiquotId,workflow, matchedSampleId, analysisId,analyzedSampleId);
+      val tsvMetadataData = ssmMetadataTsvConverter.toTSVData(ssmMetadata);
+
+
       log.info("AbsFile: {}\t\tFMD: {}", file.getAbsoluteFile().toString(), fileMetaData);
+      val vcf = new VCFFileReader(file, REQUIRE_INDEX_CFG );
+      for (val variantContext : vcf){
+        val ssmPrimary = IndelSSMPrimary.newIndelSSMPrimary(variantContext, analysisId,analyzedSampleId);
+        val tsvPrimaryData = ssmPrimaryTsvConverter.toTSVData(ssmPrimary);
+      }
+
 
     }
 //    consensusPortalFileDownloader.stream().forEach(f -> log.info(f.getAbsoluteFile().toString()));

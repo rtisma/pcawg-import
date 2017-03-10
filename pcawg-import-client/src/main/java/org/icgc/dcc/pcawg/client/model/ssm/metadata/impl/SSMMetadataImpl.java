@@ -4,19 +4,27 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
-import org.icgc.dcc.pcawg.client.vcf.CallerTypes;
 
-@RequiredArgsConstructor
+import static lombok.AccessLevel.PRIVATE;
+
+@RequiredArgsConstructor(access = PRIVATE)
 public class SSMMetadataImpl implements SSMMetadata {
   private static final String DEFAULT_ASSEMBLY_VERSION = "GRCh37";
   private static final String DEFAULT_PLATFORM = "Illumina HiSeq";
   private static final String DEFAULT_SEQUENCING_STRATEGY = "WGS";
+  public static final SSMMetadataImpl newSSMMetadataImpl(String aliquotId,
+      String variationCallingAlgorithm,
+      String matchedSampleId,
+      String analysisId,
+      String analyzedSampleId){
+    return new SSMMetadataImpl(aliquotId, variationCallingAlgorithm, matchedSampleId, analysisId, analyzedSampleId);
+  }
 
   @NonNull
   private final String aliquotId;
 
   @NonNull
-  private final CallerTypes callerType;
+  private final String variationCallingAlgorithm;
 
   @NonNull
   @Getter
@@ -56,8 +64,8 @@ public class SSMMetadataImpl implements SSMMetadata {
   }
 
   @Override
-  public CallerTypes getVariationCallingAlgorithm() {
-    return callerType;
+  public String getVariationCallingAlgorithm() {
+    return variationCallingAlgorithm;
   }
 
   @Override
