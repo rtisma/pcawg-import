@@ -18,7 +18,7 @@ public class IndelSSMPrimary extends AbstractSSMPrimaryBase {
     if len(ALT)>len(REF): insertion of <=200bp
     if len(ALT)<len(REF): deletion of <=200bp
      */
-    return null;
+    return "NEED_TO_IMPL";
   }
 
   @Override
@@ -33,26 +33,27 @@ public class IndelSSMPrimary extends AbstractSSMPrimaryBase {
 
   @Override
   public String getReferenceGenomeAllele() {
-    return null;
+    return "NEED_TO_IMPL";
   }
 
   @Override
   public String getControlGenotype() {
-    return null;
+    return "NEED_TO_IMPL";
   }
 
   @Override
   public String getMutatedFromAllele() {
-    return null;
+    return "NEED_TO_IMPL";
   }
 
   @Override
   public String getTumorGenotype() {
-    return null;
+    return "NEED_TO_IMPL";
   }
 
   @Override
   public String getMutatedToAllele() {
-    return null;
+    return "NEED_TO_IMPL";
   }
+
 }

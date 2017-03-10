@@ -40,4 +40,8 @@ public class ClientProperties {
   public static final String SAMPLE_SHEET_TSV_FILENAME = "pcawg_sample_sheet.2016-10-18.tsv";
   public static final String SAMPLE_SHEET_TSV_URL = "https://raw.githubusercontent.com/ICGC-TCGA-PanCancer/pcawg-operations/develop/lists/sample_sheet/"+SAMPLE_SHEET_TSV_FILENAME;
 
+  public static final String OUTPUT_TSV_DIRECTORY = "tsvDir";
+  public static final String SSM_P_TSV_FILENAME = "ssm_p.tsv";
+  public static final String SSM_M_TSV_FILENAME = "ssm_m.tsv";
+
 }

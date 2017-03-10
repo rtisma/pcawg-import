@@ -12,16 +12,13 @@ public class SSMMetadataImpl implements SSMMetadata {
   private static final String DEFAULT_ASSEMBLY_VERSION = "GRCh37";
   private static final String DEFAULT_PLATFORM = "Illumina HiSeq";
   private static final String DEFAULT_SEQUENCING_STRATEGY = "WGS";
-  public static final SSMMetadataImpl newSSMMetadataImpl(String aliquotId,
-      String variationCallingAlgorithm,
+
+  public static final SSMMetadataImpl newSSMMetadataImpl(String variationCallingAlgorithm,
       String matchedSampleId,
       String analysisId,
       String analyzedSampleId){
-    return new SSMMetadataImpl(aliquotId, variationCallingAlgorithm, matchedSampleId, analysisId, analyzedSampleId);
+    return new SSMMetadataImpl(variationCallingAlgorithm, matchedSampleId, analysisId, analyzedSampleId);
   }
-
-  @NonNull
-  private final String aliquotId;
 
   @NonNull
   private final String variationCallingAlgorithm;
@@ -83,13 +80,15 @@ public class SSMMetadataImpl implements SSMMetadata {
     return DEFAULT_EMPTY;
   }
 
+  //TODO: need to implement
   @Override
   public String getRawDataRepository() {
-    throw new IllegalStateException("No implementation for Raw Data Repository - us and non us");
+    return "NEED_TO_IMPL";
   }
 
+  //TODO: need to implement
   @Override
   public String getRawDataAccession() {
-    throw new IllegalStateException("No implementation for Raw Data Accession");
+    return "NEED_TO_IMPL";
   }
 }

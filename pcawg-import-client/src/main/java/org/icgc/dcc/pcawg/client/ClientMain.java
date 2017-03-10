@@ -17,9 +17,11 @@
  */
 package org.icgc.dcc.pcawg.client;
 
+import htsjdk.variant.vcf.VCFFileReader;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -27,9 +29,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import java.util.Arrays;
 
 import static org.icgc.dcc.pcawg.client.Factory.newMetadataContainer;
+import static org.icgc.dcc.pcawg.client.Factory.newSSMMetadata;
+import static org.icgc.dcc.pcawg.client.Factory.newSSMMetadataTransformer;
+import static org.icgc.dcc.pcawg.client.Factory.newSSMPrimaryTransformer;
 import static org.icgc.dcc.pcawg.client.Factory.newStorage;
-import static org.icgc.dcc.pcawg.client.tsv.impl.SSMMetadataTSVConverter.newSSMMetadataTSVConverter;
-import static org.icgc.dcc.pcawg.client.tsv.impl.SSMPrimaryTSVConverter.newSSMPrimaryTSVConverter;
+import static org.icgc.dcc.pcawg.client.model.ssm.primary.impl.IndelSSMPrimary.newIndelSSMPrimary;
 
 @Slf4j
 @SpringBootApplication
@@ -46,65 +50,41 @@ public class ClientMain implements CommandLineRunner {
     log.info("Passed arguments: {}", Arrays.toString(args));
 
     val metadataContainer = newMetadataContainer();
-    val ssmMetadataTsvConverter = newSSMMetadataTSVConverter();
-    val ssmPrimaryTsvConverter = newSSMPrimaryTSVConverter();
     val storage = newStorage();
     int count = 1;
     for (val dccProjectCode : metadataContainer.getDccProjectCodes()){
+      val ssmPrimaryTransformer = newSSMPrimaryTransformer(dccProjectCode);
+      val ssmMetadataTransformer = newSSMMetadataTransformer(dccProjectCode);
       for (val metadataContext : metadataContainer.getMetadataContextsForDccProjectCode(dccProjectCode)){
         val projectMetadata = metadataContext.getProjectMetadata();
         val fileMetaData = metadataContext.getFileMetaData();
         val file = storage.downloadFile(fileMetaData);
+        val dataType = fileMetaData.getVcfFilenameParser().getSubMutationType();
         log.info("File: {}", file.getAbsoluteFile().toString());
         log.info("ProjectCode: {}", projectMetadata);
         log.info("FileMetaData: {}", fileMetaData);
-        return;
+
+        val ssmMetadata = newSSMMetadata(metadataContext);
+        ssmMetadataTransformer.transform(ssmMetadata);
+        val vcf = new VCFFileReader(file, REQUIRE_INDEX_CFG);
+        for (val variant : vcf){
+          SSMPrimary ssmPrimary;
+          if (dataType.toLowerCase().contains("indel")){
+            ssmPrimary = newIndelSSMPrimary(variant, metadataContext.getAnalysisId(), projectMetadata.getAnalyzedSampleId());
+            ssmPrimaryTransformer.transform(ssmPrimary);
+          } else if(dataType.toLowerCase().contains("snv_mnv")){
 
 
+          } else {
+            throw new IllegalStateException("The dataType "+dataType+" is unrecognized");
+          }
+        }
       }
+      ssmPrimaryTransformer.close();
+      ssmMetadataTransformer.close();
     }
-    /*
-    val transformer = newTransformer();
-    val tsvPrimaryHeader = ssmPrimaryTsvConverter.toTSVHeader();
-    val tsvMetadataHeader = ssmMetadataTsvConverter.toTSVHeader();
-    log.info("MetaDataHeader: {}", tsvMetadataHeader);
-    log.info("PrimaryHeader: {}", tsvPrimaryHeader);
-    int count = 6;
-    for(val fileContext : consensusPortalFileDownloader){
-      if (count++ > 5){
-        break;
-      }
-      val file = fileContext.getFile();
-      val fileMetaData = fileContext.getFileMetaData();
-      val atiquotId =  fileMetaData.getVcfFilenameParser().getObjectId();
-      val projectData = projectMetadataDAO.getProjectMetadataByAliquotId(atiquotId);
-      val dccProjectCode =   projectData.getDccProjectCode();
-      val matchedSampleId =  projectData.getMatchedSampleId();
-      val analyzedSampleId = projectData.getAnalyzedSampleId();
-      val workflow = fileMetaData.getVcfFilenameParser().getCallerId();
-      val dataType = fileMetaData.getVcfFilenameParser().getSubMutationType();
-      val analysisId = Joiners.UNDERSCORE.join(dccProjectCode, workflow, dataType );
-
-      val ssmMetadata = newSSMMetadataImpl(atiquotId,workflow, matchedSampleId, analysisId,analyzedSampleId);
-      val tsvMetadataData = ssmMetadataTsvConverter.toTSVData(ssmMetadata);
-
-
-      log.info("AbsFile: {}\t\tFMD: {}", file.getAbsoluteFile().toString(), fileMetaData);
-      val vcf = new VCFFileReader(file, REQUIRE_INDEX_CFG );
-      for (val variantContext : vcf){
-        val ssmPrimary = IndelSSMPrimary.newIndelSSMPrimary(variantContext, analysisId,analyzedSampleId);
-        val tsvPrimaryData = ssmPrimaryTsvConverter.toTSVData(ssmPrimary);
-      }
-
-
-    }
-    */
-//    consensusPortalFileDownloader.stream().forEach(f -> log.info(f.getAbsoluteFile().toString()));
-//    consensusPortalFileDownloader.stream().forEach(f -> transformer.transform(CONSENSUS));
-
-
-
   }
+
 
   public static void main(String... args) {
     SpringApplication.run(ClientMain.class, args);
