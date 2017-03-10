@@ -6,7 +6,5 @@ public interface ProjectMetadataDAO {
     return projectCode.matches("^.*-US$");
   }
 
-  String getMatchedSampleId(String aliquot_id);
-  String getAnalyzedSampleId(String aliquot_id);
-  String getDccProjectCode(String aliquot_id);
+  ProjectData getProjectDataByAliquotId(String aliquotId);
 }

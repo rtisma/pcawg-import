@@ -2,10 +2,8 @@ package org.icgc.dcc.pcawg.client.core;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
@@ -14,8 +12,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Stream;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_URL;
@@ -44,88 +42,6 @@ public class FileProjectMetadataDAO implements ProjectMetadataDAO {
    *
    *
    */
-
-  // create pojo for each file
-      // need following fields:
-      // - subitter_sample_id, donor_uniqie_id, aliquot_id, dcc_specimen_type, library_strategy
-  // open files, read everyline and split by tab, and load into respecive pojos
-  //
-
-  /**
-   * Use opencsv to bind (or marshal) TSVs (or CSVs that use tabs) to Beans, and can parse whole csv file into list of beans, where each bean can represent a row, and then can store List of beans in memory and do what ever aggrigations needed
-   * Refer to http://opencsv.sourceforge.net/
-   */
-  @Builder
-  @Value
-  public static class SampleSheetModel {
-
-    private static final int ALIQUOT_ID_POS = 5;
-    private static final int DONOR_UNIQUE_ID_POS = 0;
-    private static final int SUBMITTER_SAMPLE_ID_POS = 8;
-    private static final int DCC_SPECIMEN_TYPE = 10;
-    private static final int LIBRARY_STRATEGY = 11;
-    private static final int DCC_PROJECT_CODE= 4;
-    private static final int MAX_NUM_COLUMNS = 12;
-
-
-    @NonNull
-    private final String donorUniqueId;
-
-    @NonNull
-    private final String aliquotId;
-
-    @NonNull
-    private final String submitterSampleId;
-
-    @NonNull
-    private final String dccSpecimenType;
-
-    @NonNull
-    private final String libraryStrategy;
-
-    @NonNull
-    private final String dccProjectCode;
-
-    public static SampleSheetModel newSampleSheetModelFromTSVLine(String tsvLine){
-
-      val array = tsvLine.trim().split("\t");
-      checkArgument(array.length == MAX_NUM_COLUMNS, "Max allowed columns is %s, but input columns is %s", MAX_NUM_COLUMNS, array.length);
-      return SampleSheetModel.builder()
-          .aliquotId(array[ALIQUOT_ID_POS])
-          .dccSpecimenType(array[DCC_SPECIMEN_TYPE])
-          .donorUniqueId(array[DONOR_UNIQUE_ID_POS])
-          .dccProjectCode(array[DCC_PROJECT_CODE])
-          .libraryStrategy(array[LIBRARY_STRATEGY])
-          .submitterSampleId(array[SUBMITTER_SAMPLE_ID_POS])
-          .build();
-    }
-
-  }
-
-  @Builder
-  @Value
-  public static class Uuid2BarcodeSheetModel{
-    private static final int UUID_POS = 2;
-    private static final int TCGA_BARCODE_POS = 3;
-    private static final int MAX_NUM_COLUMNS = 4;
-
-    @NonNull
-    private final String uuid;
-
-    @NonNull
-    private final String tcgaBarcode;
-
-    public static Uuid2BarcodeSheetModel newUuid2BarcodeSheetModelFromTSVLine(String tsvLine){
-      val array = tsvLine.trim().split("\t");
-      checkArgument(array.length == MAX_NUM_COLUMNS);
-      return Uuid2BarcodeSheetModel.builder()
-          .tcgaBarcode(array[TCGA_BARCODE_POS])
-          .uuid(array[UUID_POS])
-          .build();
-    }
-
-  }
-
   @NonNull
   private final String sampleSheetFilename;
 
@@ -142,62 +58,60 @@ public class FileProjectMetadataDAO implements ProjectMetadataDAO {
     this.uuid2BarcodeSheetList = readUuid2BarcodeSheet();
   }
 
-  @Override
-  public String getAnalyzedSampleId(String aliquot_id) {
-    val isUsProject =  isUSProject(getDccProjectCode(aliquot_id));
-    val result = sampleSheetList.stream()
-        .filter(x -> x.getAliquotId().equals(aliquot_id))
-        .findFirst();
-    checkState(result.isPresent(), "Could not find first SampleSheet for aliquot_id [%s]", aliquot_id);
-    val submitterSampleId =  result.get().getSubmitterSampleId();
+  private SampleSheetModel getFirstSampleSheetByAliquotId(String aliquotId){
+    val aliquotIdStream= sampleSheetList.stream()
+        .filter(s -> s.getAliquotId().equals(aliquotId));
 
+    val aliquotIdResult = aliquotIdStream.findFirst();
+    checkState(aliquotIdResult.isPresent(), "Could not find first SampleSheet for aliquot_id [%s]", aliquotId);
+    return aliquotIdResult.get();
+  }
+
+  private String getAnalyzedSampleId(boolean isUsProject, String submitterSampleId ){
     if (isUsProject){
-      val result2= uuid2BarcodeSheetList.stream()
-          .filter(x -> x.getUuid().equals(submitterSampleId))
-          .findFirst();
-      checkState(result2.isPresent(), "Could not find SampleSheet for aliquot_id [%s] with submitter_sample_id [%s]",aliquot_id, submitterSampleId );
-      return result2.get().getTcgaBarcode();
+      val result = createSubmitterSampleIdStream(submitterSampleId).findFirst();
+      checkState(result.isPresent(),
+        "Could not find SampleSheet with submitter_sample_id [%s]", submitterSampleId );
+      return result.get().getTcgaBarcode();
     } else {
       return submitterSampleId;
     }
   }
 
+  private String getMatchedSampleId(boolean isUsProject, String donorUniqueId ){
+    val result = createDonorUniqueIdStream(donorUniqueId).findFirst();
+    checkState(result.isPresent(), "Could not find SampleSheet for with donor_unique_id [%s] and library_strategy [%s] and dcc_speciment_type containing [%s]", donorUniqueId, WGS, NORMAL);
+    val submitterSampleId = result.get().getSubmitterSampleId();
+    return getAnalyzedSampleId(isUsProject, submitterSampleId);
+  }
+
   @Override
-  public String getMatchedSampleId(String aliquot_id) {
-    val isUsProject =  isUSProject(getDccProjectCode(aliquot_id));
-    val result = sampleSheetList.stream()
-        .filter(x -> x.getAliquotId().equals(aliquot_id))
-        .findFirst();
-    checkState(result.isPresent(), "Could not find first SampleSheet for aliquot_id [%s]", aliquot_id);
-    val donorUniqueId =  result.get().getDonorUniqueId();
-    val result2 = sampleSheetList.stream()
+  public ProjectData getProjectDataByAliquotId(String aliquotId){
+    val sampleSheetByAliquotId = getFirstSampleSheetByAliquotId(aliquotId);
+    val dccProjectCode = sampleSheetByAliquotId.getDccProjectCode();
+    val submitterSampleId = sampleSheetByAliquotId.getSubmitterSampleId();
+    val donorUniqueId = sampleSheetByAliquotId.getDonorUniqueId();
+    val isUsProject =  isUSProject(dccProjectCode);
+
+    val analyzedSampleId = getAnalyzedSampleId(isUsProject,submitterSampleId);
+    val matchedSampleId = getMatchedSampleId(isUsProject,donorUniqueId);
+    return ProjectData.builder()
+        .analyzedSampleId(analyzedSampleId)
+        .dccProjectCode(dccProjectCode)
+        .matchedSampleId(matchedSampleId)
+        .build();
+  }
+
+  private Stream<Uuid2BarcodeSheetModel> createSubmitterSampleIdStream(String submitterSampleId){
+    return uuid2BarcodeSheetList.stream()
+        .filter(s -> s.getUuid().equals(submitterSampleId));
+  }
+
+  private Stream<SampleSheetModel> createDonorUniqueIdStream(String donorUniqueId){
+    return sampleSheetList.stream()
         .filter(x -> x.getDonorUniqueId().equals(donorUniqueId))
         .filter(y -> y.getLibraryStrategy().equals(WGS))
-        .filter(z -> z.getDccSpecimenType().toLowerCase().contains(NORMAL))
-        .findFirst();
-    checkState(result2.isPresent(), "Could not find SampleSheet for aliquot_id [%s] with donor_unique_id [%s] and library_strategy [%s] and dcc_speciment_type containing [%s]",aliquot_id, donorUniqueId, WGS, NORMAL);
-    val submitterSampleId = result2.get().getSubmitterSampleId();
-    if (isUsProject){
-      val result3= uuid2BarcodeSheetList.stream()
-          .filter(x -> x.getUuid().equals(submitterSampleId))
-          .findFirst();
-      checkState(result3.isPresent(), "Could not find SampleSheet for aliquot_id [%s] with submitter_sample_id [%s]",aliquot_id, submitterSampleId );
-      return result3.get().getTcgaBarcode();
-    } else {
-      return submitterSampleId;
-    }
-  }
-
-
-  //TODO: This functions assumes all aliquot_ids are UNIQUE (no repeats), so using first occurance. Verify this
-  @Override
-  public String getDccProjectCode(String aliquot_id) {
-    val result = sampleSheetList.stream()
-        .filter(s -> s.getAliquotId().equals(aliquot_id))
-        .findFirst();
-    checkState(result.isPresent(), "Could not find first SampleSheet for aliquot_id [%s]", aliquot_id);
-    return result.get().getDccProjectCode();
-
+        .filter(z -> z.getDccSpecimenType().toLowerCase().contains(NORMAL));
   }
 
   private List<SampleSheetModel> readSampleSheet(){
@@ -237,6 +151,7 @@ public class FileProjectMetadataDAO implements ProjectMetadataDAO {
     log.info("Done downloading, creating FileProjectMetadataDAO");
     return new FileProjectMetadataDAO(SAMPLE_SHEET_TSV_FILENAME, UUID2BARCODE_SHEET_TSV_FILENAME);
   }
+
 
 
 }
