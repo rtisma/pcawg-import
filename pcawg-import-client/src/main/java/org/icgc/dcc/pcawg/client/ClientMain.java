@@ -67,7 +67,7 @@ public class ClientMain implements CommandLineRunner {
       val file = fileContext.getFile();
       val fileMetaData = fileContext.getFileMetaData();
       val atiquotId =  fileMetaData.getVcfFilenameParser().getObjectId();
-      val projectData = projectMetadataDAO.getProjectDataByAliquotId(atiquotId);
+      val projectData = projectMetadataDAO.getProjectMetadataByAliquotId(atiquotId);
       val dccProjectCode =   projectData.getDccProjectCode();
       val matchedSampleId =  projectData.getMatchedSampleId();
       val analyzedSampleId = projectData.getAnalyzedSampleId();

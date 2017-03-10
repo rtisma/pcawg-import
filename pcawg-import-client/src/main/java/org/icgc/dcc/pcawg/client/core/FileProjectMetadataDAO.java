@@ -86,7 +86,7 @@ public class FileProjectMetadataDAO implements ProjectMetadataDAO {
   }
 
   @Override
-  public ProjectData getProjectDataByAliquotId(String aliquotId){
+  public ProjectMetadata getProjectMetadataByAliquotId(String aliquotId){
     val sampleSheetByAliquotId = getFirstSampleSheetByAliquotId(aliquotId);
     val dccProjectCode = sampleSheetByAliquotId.getDccProjectCode();
     val submitterSampleId = sampleSheetByAliquotId.getSubmitterSampleId();
@@ -95,7 +95,7 @@ public class FileProjectMetadataDAO implements ProjectMetadataDAO {
 
     val analyzedSampleId = getAnalyzedSampleId(isUsProject,submitterSampleId);
     val matchedSampleId = getMatchedSampleId(isUsProject,donorUniqueId);
-    return ProjectData.builder()
+    return ProjectMetadata.builder()
         .analyzedSampleId(analyzedSampleId)
         .dccProjectCode(dccProjectCode)
         .matchedSampleId(matchedSampleId)

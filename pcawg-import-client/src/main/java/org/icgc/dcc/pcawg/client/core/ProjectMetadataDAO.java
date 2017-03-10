@@ -6,5 +6,5 @@ public interface ProjectMetadataDAO {
     return projectCode.matches("^.*-US$");
   }
 
-  ProjectData getProjectDataByAliquotId(String aliquotId);
+  ProjectMetadata getProjectMetadataByAliquotId(String aliquotId);
 }

@@ -38,13 +38,13 @@ public class ProjectMetadataDAOTest {
     val usId = "9c70688d-6e43-4520-9262-eaae4e4d597d";
 
     //Non-US
-    val nonUsProjectData = projectMetadataDAO.getProjectDataByAliquotId(nonUsId);
+    val nonUsProjectData = projectMetadataDAO.getProjectMetadataByAliquotId(nonUsId);
     assertThat(nonUsProjectData.getDccProjectCode()).isEqualTo("LIRI-JP");
     assertThat(nonUsProjectData.getAnalyzedSampleId()).isEqualTo("RK001_C01");
     assertThat(nonUsProjectData.getMatchedSampleId()).isEqualTo("RK001_B01");
 
     //US
-    val usProjectData = projectMetadataDAO.getProjectDataByAliquotId(usId);
+    val usProjectData = projectMetadataDAO.getProjectMetadataByAliquotId(usId);
     assertThat(usProjectData.getDccProjectCode()).isEqualTo("BRCA-US");
     assertThat(usProjectData.getAnalyzedSampleId()).isEqualTo("TCGA-BH-A18R-01A-11D-A19H-09");
     assertThat(usProjectData.getMatchedSampleId()).isEqualTo("TCGA-BH-A18R-11A-42D-A19H-09");
