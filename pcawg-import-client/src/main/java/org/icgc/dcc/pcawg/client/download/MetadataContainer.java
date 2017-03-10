@@ -1,10 +1,8 @@
 package org.icgc.dcc.pcawg.client.download;
 
 import com.google.common.collect.ImmutableList;
-import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
-import lombok.experimental.NonFinal;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.data.ProjectMetadataDAO;
 import org.icgc.dcc.pcawg.client.model.metadata.MetadataContext;
@@ -17,38 +15,34 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.stream.Collectors.groupingBy;
 import static org.icgc.dcc.pcawg.client.model.metadata.file.FileMetaData.buildFileMetaData;
 
-@Value
-@Builder
+@Getter
 public class MetadataContainer {
 
-  @NonNull
-  private final PortalNew portal;
+  private List<MetadataContext> metadataContextList;
 
-  @NonNull
-  private final ProjectMetadataDAO projectMetadataDAO;
+  private Map<String, List<MetadataContext>> dccProjectCodeMap;
 
-  @NonFinal
-  private List<MetadataContext> metadataContextList = null;
+  public MetadataContainer(@NonNull PortalNew portal, @NonNull  ProjectMetadataDAO projectMetadataDAO){
+    init(portal, projectMetadataDAO);
+  }
 
-  @NonFinal
-  private Map<String, List<MetadataContext>> dccProjectCodeMap = null;
+  private void init(PortalNew portal, ProjectMetadataDAO projectMetadataDAO){
+    val builder = ImmutableList.<MetadataContext>builder();
+    for (val fileMeta : portal.getFileMetas()){
+      val fileMetaData = buildFileMetaData(fileMeta);
+      val aliquotId = fileMetaData.getVcfFilenameParser().getObjectId();
+      val projectMetadata = projectMetadataDAO.getProjectMetadataByAliquotId(aliquotId);
+      builder.add(MetadataContext.builder()
+          .projectMetadata(projectMetadata)
+          .fileMetaData(fileMetaData)
+          .build());
+    }
+    metadataContextList = builder.build();
+    dccProjectCodeMap = groupByDccProjectCode(metadataContextList);
+  }
 
   //Lazy loading
   public List<MetadataContext> getMetadataContexts(){
-    if(metadataContextList == null){
-      val builder = ImmutableList.<MetadataContext>builder();
-      for (val fileMeta : portal.getFileMetas()){
-        val fileMetaData = buildFileMetaData(fileMeta);
-        val aliquotId = fileMetaData.getVcfFilenameParser().getObjectId();
-        val projectMetadata = projectMetadataDAO.getProjectMetadataByAliquotId(aliquotId);
-        builder.add(MetadataContext.builder()
-            .projectMetadata(projectMetadata)
-            .fileMetaData(fileMetaData)
-            .build());
-      }
-      metadataContextList = builder.build();
-      dccProjectCodeMap = groupByDccProjectCode(metadataContextList);
-    }
     return metadataContextList;
   }
 

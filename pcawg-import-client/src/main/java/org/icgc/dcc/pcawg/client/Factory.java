@@ -2,6 +2,7 @@ package org.icgc.dcc.pcawg.client;
 
 import lombok.NoArgsConstructor;
 import org.icgc.dcc.pcawg.client.data.ProjectMetadataDAO;
+import org.icgc.dcc.pcawg.client.download.MetadataContainer;
 import org.icgc.dcc.pcawg.client.download.PortalFileDownloader;
 import org.icgc.dcc.pcawg.client.download.PortalNew;
 import org.icgc.dcc.pcawg.client.download.Storage;
@@ -27,6 +28,10 @@ public class Factory {
     return PortalNew.builder()
         .jsonQueryGenerator(newPcawgVcfPortalAPIQueryCreator(callerType))
         .build();
+  }
+
+  public static MetadataContainer newMetadataContainer(){
+    return new MetadataContainer(newPortal(CONSENSUS), newProjectMetadataDAO());
   }
 
   private static PortalFileDownloader newPortalFileDownloaderFromCallerType(CallerTypes callerType){

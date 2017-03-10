@@ -17,22 +17,17 @@
  */
 package org.icgc.dcc.pcawg.client;
 
-import htsjdk.variant.vcf.VCFFileReader;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.common.core.util.Joiners;
-import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.IndelSSMPrimary;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.util.Arrays;
 
-import static org.icgc.dcc.pcawg.client.Factory.newConsensusPortalFileDownloader;
-import static org.icgc.dcc.pcawg.client.Factory.newProjectMetadataDAO;
-import static org.icgc.dcc.pcawg.client.Factory.newTransformer;
-import static org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.SSMMetadataImpl.newSSMMetadataImpl;
+import static org.icgc.dcc.pcawg.client.Factory.newMetadataContainer;
+import static org.icgc.dcc.pcawg.client.Factory.newStorage;
 import static org.icgc.dcc.pcawg.client.tsv.impl.SSMMetadataTSVConverter.newSSMMetadataTSVConverter;
 import static org.icgc.dcc.pcawg.client.tsv.impl.SSMPrimaryTSVConverter.newSSMPrimaryTSVConverter;
 
@@ -50,10 +45,25 @@ public class ClientMain implements CommandLineRunner {
     log.info("****** PCAWG VCF Import Client ******");
     log.info("Passed arguments: {}", Arrays.toString(args));
 
-    val projectMetadataDAO = newProjectMetadataDAO();
-    val consensusPortalFileDownloader = newConsensusPortalFileDownloader();
+    val metadataContainer = newMetadataContainer();
     val ssmMetadataTsvConverter = newSSMMetadataTSVConverter();
     val ssmPrimaryTsvConverter = newSSMPrimaryTSVConverter();
+    val storage = newStorage();
+    int count = 1;
+    for (val dccProjectCode : metadataContainer.getDccProjectCodes()){
+      for (val metadataContext : metadataContainer.getMetadataContextsForDccProjectCode(dccProjectCode)){
+        val projectMetadata = metadataContext.getProjectMetadata();
+        val fileMetaData = metadataContext.getFileMetaData();
+        val file = storage.downloadFile(fileMetaData);
+        log.info("File: {}", file.getAbsoluteFile().toString());
+        log.info("ProjectCode: {}", projectMetadata);
+        log.info("FileMetaData: {}", fileMetaData);
+        return;
+
+
+      }
+    }
+    /*
     val transformer = newTransformer();
     val tsvPrimaryHeader = ssmPrimaryTsvConverter.toTSVHeader();
     val tsvMetadataHeader = ssmMetadataTsvConverter.toTSVHeader();
@@ -88,6 +98,7 @@ public class ClientMain implements CommandLineRunner {
 
 
     }
+    */
 //    consensusPortalFileDownloader.stream().forEach(f -> log.info(f.getAbsoluteFile().toString()));
 //    consensusPortalFileDownloader.stream().forEach(f -> transformer.transform(CONSENSUS));
 
