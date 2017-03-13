@@ -21,7 +21,6 @@ import htsjdk.variant.vcf.VCFFileReader;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -51,7 +50,6 @@ public class ClientMain implements CommandLineRunner {
 
     val metadataContainer = newMetadataContainer();
     val storage = newStorage();
-    int count = 1;
     for (val dccProjectCode : metadataContainer.getDccProjectCodes()){
       val ssmPrimaryTransformer = newSSMPrimaryTransformer(dccProjectCode);
       val ssmMetadataTransformer = newSSMMetadataTransformer(dccProjectCode);
@@ -68,16 +66,15 @@ public class ClientMain implements CommandLineRunner {
         ssmMetadataTransformer.transform(ssmMetadata);
         val vcf = new VCFFileReader(file, REQUIRE_INDEX_CFG);
         for (val variant : vcf){
-          SSMPrimary ssmPrimary;
-          if (dataType.toLowerCase().contains("indel")){
-            ssmPrimary = newIndelSSMPrimary(variant, metadataContext.getAnalysisId(), projectMetadata.getAnalyzedSampleId());
-            ssmPrimaryTransformer.transform(ssmPrimary);
-          } else if(dataType.toLowerCase().contains("snv_mnv")){
+            if (dataType.toLowerCase().contains("indel")){
+                val ssmPrimary = newIndelSSMPrimary(variant, metadataContext.getAnalysisId(), projectMetadata.getAnalyzedSampleId());
+                ssmPrimaryTransformer.transform(ssmPrimary);
+            } else if(dataType.toLowerCase().contains("snv_mnv")){
 
 
-          } else {
-            throw new IllegalStateException("The dataType "+dataType+" is unrecognized");
-          }
+            } else {
+              throw new IllegalStateException("The dataType "+dataType+" is unrecognized");
+            }
         }
       }
       ssmPrimaryTransformer.close();

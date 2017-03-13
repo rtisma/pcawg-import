@@ -1,25 +1,34 @@
 package org.icgc.dcc.pcawg.client.model.ssm.primary.impl;
 
 import htsjdk.variant.variantcontext.VariantContext;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.icgc.dcc.pcawg.client.model.ssm.NACodes;
+import org.icgc.dcc.pcawg.client.vcf.MutationTypes;
 
+@Slf4j
 public class IndelSSMPrimary extends AbstractSSMPrimaryBase {
 
-  public static final IndelSSMPrimary newIndelSSMPrimary(final VariantContext variant, final String analysisId, final String analyzedSampleId) throws AttributeDoesNotExistException {
+
+  public static final IndelSSMPrimary newIndelSSMPrimary(final VariantContext variant, final String analysisId, final String analyzedSampleId)  {
     return new IndelSSMPrimary(variant, analysisId, analyzedSampleId);
   }
 
-  private IndelSSMPrimary(final VariantContext variant, final String analysisId, final String analyzedSampleId) throws AttributeDoesNotExistException {
+  public IndelSSMPrimary(VariantContext variant, String analysisId, String analyzedSampleId) {
     super(variant, analysisId, analyzedSampleId);
   }
 
   @Override
-  public String getMutationType() {
-    /*
-    if len(ALT)>len(REF): insertion of <=200bp
-    if len(ALT)<len(REF): deletion of <=200bp
-     */
-//    getVariant().getReference().getBaseString().length()
-    return "NEED_TO_IMPL";
+  public String getMutationType()  {
+    val refLength = getReferanceAlleleLength();
+    val altLength = getAlternativeAlleleLength();
+    if(altLength > refLength){
+      return MutationTypes.INSERTION_LTE_200BP.toString();
+    } else if(altLength <  refLength){
+      return MutationTypes.DELETION_LTE_200BP.toString();
+    } else {
+      return NACodes.DATA_VERIFIED_TO_BE_UNKNOWN.toString();
+    }
   }
 
   @Override
