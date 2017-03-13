@@ -23,14 +23,14 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.download.PortalFiles;
-import org.icgc.dcc.pcawg.client.vcf.CallerTypes;
+import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 import org.icgc.dcc.pcawg.client.vcf.MutationTypes;
 import org.icgc.dcc.pcawg.client.vcf.DataTypes;
 
 import java.io.Serializable;
 import java.util.Comparator;
 
-//TODO: [rtisma] -- consider storing the CallerTypes, MutationTypes and MutationSubTypes enum values instead of string representation. Or atleast keep strings, just create functions to compare the string against the enum
+//TODO: [rtisma] -- consider storing the WorkflowTypes, MutationTypes and MutationSubTypes enum values instead of string representation. Or atleast keep strings, just create functions to compare the string against the enum
 @Slf4j
 @Data
 public final class FileMetaData implements Serializable {
@@ -64,7 +64,7 @@ public final class FileMetaData implements Serializable {
   private final String fileMd5sum;
 
   @NonNull
-  private final PortalVCFFilenameParser vcfFilenameParser;
+  private final FilenameParser vcfFilenameParser;
 
 //  @NonNull
 //  private final String dccProjectCode;
@@ -76,8 +76,8 @@ public final class FileMetaData implements Serializable {
 //  private final String matchedSampleId;
 //
 //  public String getAnalysisId(){
-//    val workflow = vcfFilenameParser.getCallerId();
-//    val dataType = vcfFilenameParser.getSubMutationType();
+//    val workflow = vcfFilenameParser.getWorkflow();
+//    val dataType = vcfFilenameParser.getDataType();
 //    return UNDERSCORE.join(dccProjectCode, workflow, dataType );
 //  }
 
@@ -102,11 +102,11 @@ public final class FileMetaData implements Serializable {
   }
 
   public boolean compare(final DataTypes type) {
-    return getVcfFilenameParser().getSubMutationType().equals(type.toString());
+    return getVcfFilenameParser().getDataType().equals(type.toString());
   }
 
-  public boolean compare(final CallerTypes type) {
-    return getVcfFilenameParser().getCallerId().equals(type.toString());
+  public boolean compare(final WorkflowTypes type) {
+    return getVcfFilenameParser().getWorkflow().equals(type.toString());
   }
 
   private static String getStartsWithRegex(final String keyword) {
@@ -118,11 +118,11 @@ public final class FileMetaData implements Serializable {
   }
 
   public boolean startsWith(final DataTypes type) {
-    return getVcfFilenameParser().getSubMutationType().matches(getStartsWithRegex(type.toString()));
+    return getVcfFilenameParser().getDataType().matches(getStartsWithRegex(type.toString()));
   }
 
-  public boolean startsWith(final CallerTypes type) {
-    return getVcfFilenameParser().getCallerId().matches(getStartsWithRegex(type.toString()));
+  public boolean startsWith(final WorkflowTypes type) {
+    return getVcfFilenameParser().getWorkflow().matches(getStartsWithRegex(type.toString()));
   }
 
   public double getFileSizeMb() {

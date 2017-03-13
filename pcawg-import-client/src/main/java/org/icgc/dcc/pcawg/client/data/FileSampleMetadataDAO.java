@@ -88,6 +88,7 @@ public class FileProjectMetadataDAO implements ProjectMetadataDAO {
         .analyzedSampleId(analyzedSampleId)
         .dccProjectCode(dccProjectCode)
         .matchedSampleId(matchedSampleId)
+        .aliquotId(aliquotId)
         .build();
   }
 

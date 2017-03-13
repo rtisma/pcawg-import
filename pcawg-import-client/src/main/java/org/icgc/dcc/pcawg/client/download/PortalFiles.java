@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import org.icgc.dcc.pcawg.client.model.metadata.file.PortalVCFFilenameParser;
+import org.icgc.dcc.pcawg.client.model.metadata.file.FilenameParser;
 
 import static lombok.AccessLevel.PRIVATE;
 
@@ -117,8 +117,8 @@ public final class PortalFiles {
     return file.path(REFERENCE_GENOME);
   }
 
-  public static PortalVCFFilenameParser getParser(@NonNull ObjectNode file) {
-    return new PortalVCFFilenameParser(getFileName(file));
+  public static FilenameParser getParser(@NonNull ObjectNode file) {
+    return new FilenameParser(getFileName(file));
   }
 
 }

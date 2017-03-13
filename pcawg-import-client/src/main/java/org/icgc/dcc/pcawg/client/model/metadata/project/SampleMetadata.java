@@ -11,6 +11,9 @@ import static org.icgc.dcc.common.core.util.Joiners.UNDERSCORE;
 public class ProjectMetadata {
 
   @NonNull
+  private final String aliquotId;
+
+  @NonNull
   private final String analyzedSampleId;
 
   @NonNull
@@ -18,6 +21,7 @@ public class ProjectMetadata {
 
   @NonNull
   private final String matchedSampleId;
+
 
   public String getAnalysisId(String workflow, String dataType){
     return UNDERSCORE.join(dccProjectCode, workflow,dataType);

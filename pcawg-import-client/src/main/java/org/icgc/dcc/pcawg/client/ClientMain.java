@@ -54,20 +54,23 @@ public class ClientMain implements CommandLineRunner {
       val ssmPrimaryTransformer = newSSMPrimaryTransformer(dccProjectCode);
       val ssmMetadataTransformer = newSSMMetadataTransformer(dccProjectCode);
       for (val metadataContext : metadataContainer.getMetadataContextsForDccProjectCode(dccProjectCode)){
-        val projectMetadata = metadataContext.getProjectMetadata();
+        val sampleMetadata = metadataContext.getSampleMetadata();
         val fileMetaData = metadataContext.getFileMetaData();
         val file = storage.downloadFile(fileMetaData);
-        val dataType = fileMetaData.getVcfFilenameParser().getSubMutationType();
+        val dataType = sampleMetadata.getDataType();
         log.info("File: {}", file.getAbsoluteFile().toString());
-        log.info("ProjectCode: {}", projectMetadata);
+        log.info("ProjectCode: {}", sampleMetadata);
         log.info("FileMetaData: {}", fileMetaData);
 
-        val ssmMetadata = newSSMMetadata(metadataContext);
+        val ssmMetadata = newSSMMetadata(sampleMetadata);
         ssmMetadataTransformer.transform(ssmMetadata);
         val vcf = new VCFFileReader(file, REQUIRE_INDEX_CFG);
         for (val variant : vcf){
             if (dataType.toLowerCase().contains("indel")){
-                val ssmPrimary = newIndelSSMPrimary(variant, metadataContext.getAnalysisId(), projectMetadata.getAnalyzedSampleId());
+                val ssmPrimary = newIndelSSMPrimary(
+                          variant,
+                          sampleMetadata.getAnalysisId(),
+                          sampleMetadata.getAnalyzedSampleId());
                 ssmPrimaryTransformer.transform(ssmPrimary);
             } else if(dataType.toLowerCase().contains("snv_mnv")){
 

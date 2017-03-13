@@ -13,12 +13,17 @@ public class SSMMetadataImpl implements SSMMetadata {
   private static final String DEFAULT_ASSEMBLY_VERSION = "GRCh37";
   private static final String DEFAULT_PLATFORM = "Illumina HiSeq";
   private static final String DEFAULT_SEQUENCING_STRATEGY = "WGS";
+  private static final String TCGA = "TCGA";
+  private static final String EGA = "EGA";
 
   public static final SSMMetadataImpl newSSMMetadataImpl(String variationCallingAlgorithm,
       String matchedSampleId,
       String analysisId,
-      String analyzedSampleId){
-    return new SSMMetadataImpl(variationCallingAlgorithm, matchedSampleId, analysisId, analyzedSampleId);
+      String analyzedSampleId,
+      boolean isUsProject,
+      String aliquotId
+      ){
+    return new SSMMetadataImpl(variationCallingAlgorithm, matchedSampleId, analysisId, analyzedSampleId, isUsProject, aliquotId);
   }
 
   @NonNull
@@ -35,6 +40,11 @@ public class SSMMetadataImpl implements SSMMetadata {
   @NonNull
   @Getter
   private final String analyzedSampleId;
+
+  private final boolean isUsProject;
+
+  @NonNull
+  private final String aliquotId;
 
   @Override
   public String getAssemblyVersion() {
@@ -81,16 +91,14 @@ public class SSMMetadataImpl implements SSMMetadata {
     return NACodes.DATA_VERIFIED_TO_BE_UNKNOWN.toString();
   }
 
-  //TODO: need to implement
   @Override
   public String getRawDataRepository() {
-    return "NEED_TO_IMPL";
+    return isUsProject ? TCGA:EGA;
   }
 
-  //TODO: need to implement
   @Override
   public String getRawDataAccession() {
-    return "NEED_TO_IMPL";
+    return isUsProject ? getAnalyzedSampleId() : aliquotId;
   }
 
   //For andy, just a placeholder

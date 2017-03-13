@@ -66,7 +66,7 @@ public class FileMetaDataContext implements Serializable, Iterable<FileMetaData>
   }
 
   public Map<String, FileMetaDataContext> groupFileMetaDataByCaller() {
-    return groupFileMetaDataContext(x -> x.getVcfFilenameParser().getCallerId());
+    return groupFileMetaDataContext(x -> x.getVcfFilenameParser().getWorkflow());
   }
 
   public Map<String, FileMetaDataContext> groupFileMetaDatasByDonor() {
@@ -82,7 +82,7 @@ public class FileMetaDataContext implements Serializable, Iterable<FileMetaData>
   }
 
   public Map<String, FileMetaDataContext> groupFileMetaDatasBySubMutationType() {
-    return groupFileMetaDataContext(x -> x.getVcfFilenameParser().getSubMutationType());
+    return groupFileMetaDataContext(x -> x.getVcfFilenameParser().getDataType());
   }
 
   public FileMetaDataContext sortByFileSize(final boolean ascending) {

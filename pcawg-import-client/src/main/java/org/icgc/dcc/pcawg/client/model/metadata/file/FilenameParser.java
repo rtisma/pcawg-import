@@ -21,7 +21,7 @@ import com.google.common.collect.Iterables;
 import lombok.Getter;
 import lombok.NonNull;
 import org.icgc.dcc.common.core.util.Splitters;
-import org.icgc.dcc.pcawg.client.vcf.CallerTypes;
+import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
 import java.io.Serializable;
 
@@ -38,16 +38,16 @@ public class PortalVCFFilenameParser
   private static final long serialVersionUID = 1484172857L;
 
   private static final int MIN_NUM_FIELDS = 6;
-  private static final int OBJECT_ID_POS = 0;
-  private static final int CALLER_ID_POS = 1;
+  private static final int ALIQUOT_ID_POS = 0;
+  private static final int WORKFLOW_POS = 1;
   private static final int DATE_POS = 2;
   private static final int MUTATION_TYPE_POS = 3;
-  private static final int SUB_MUTATION_TYPE_POS = 4;
-  private static final int FILE_TYPE_POS = 5;
+  private static final int DATA_TYPE_POS = 4;
+  private static final int EXTENSION_POS = 5;
 
   @Getter
   private final String[] elements;
-  private CallerTypes callerType = null;
+  private WorkflowTypes workflowType = null;
 
   public PortalVCFFilenameParser(@NonNull final String filename) {
     checkArgument(!filename.isEmpty(), "The filename [%s] is empty", filename);
@@ -58,12 +58,12 @@ public class PortalVCFFilenameParser
         "The filename [%s] has %d fields, but a minimum of %d is expected", filename, elements.length, MIN_NUM_FIELDS);
   }
 
-  public String getObjectId() {
-    return elements[OBJECT_ID_POS];
+  public String getAliquotId() {
+    return elements[ALIQUOT_ID_POS];
   }
 
-  public String getCallerId() {
-    return elements[CALLER_ID_POS];
+  public String getWorkflow() {
+    return elements[WORKFLOW_POS];
   }
 
   public String getDate() {
@@ -74,12 +74,12 @@ public class PortalVCFFilenameParser
     return elements[MUTATION_TYPE_POS];
   }
 
-  public String getSubMutationType() {
-    return elements[SUB_MUTATION_TYPE_POS];
+  public String getDataType() {
+    return elements[DATA_TYPE_POS];
   }
 
-  public String getFileType() {
-    return elements[FILE_TYPE_POS];
+  public String getExtension() {
+    return elements[EXTENSION_POS];
   }
 
   public String getFilename() {
@@ -91,29 +91,29 @@ public class PortalVCFFilenameParser
     return getFilename();
   }
 
-  private static CallerTypes parseCallerType(final String callerId) {
+  private static WorkflowTypes parseWorkflowType(final String workflow) {
     boolean found = false;
-    CallerTypes foundCallerType = null;
-    for (CallerTypes callerType : CallerTypes.values()) {
-      if (callerType.isIn(callerId)) {
-        foundCallerType = callerType;
+    WorkflowTypes foundWorkflowType = null;
+    for (WorkflowTypes workflowType : WorkflowTypes.values()) {
+      if (workflowType.isIn(workflow)) {
+        foundWorkflowType = workflowType;
         found = true;
         break;
       }
     }
-    checkState(found, "The callerId [%s] does not contain any of the available caller types: [%s]",
-        callerId, CallerTypes.values());
-    return foundCallerType;
+    checkState(found, "The workflow [%s] does not contain any of the available workflow types: [%s]",
+        workflow, WorkflowTypes.values());
+    return foundWorkflowType;
   }
 
   /*
    * Lazy initialization. Needed for when regenerating Enums
    */
-  public CallerTypes getCallerType() {
-    if (callerType == null) {
-      callerType = parseCallerType(this.getCallerId());
+  public WorkflowTypes getWorkflowType() {
+    if (workflowType == null) {
+      workflowType = parseWorkflowType(this.getWorkflow());
     }
-    return callerType;
+    return workflowType;
   }
 
   @Override

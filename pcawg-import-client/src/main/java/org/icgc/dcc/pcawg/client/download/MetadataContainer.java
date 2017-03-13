@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.data.ProjectMetadataDAO;
+import org.icgc.dcc.pcawg.client.data.SampleMetadataDAO;
 import org.icgc.dcc.pcawg.client.model.metadata.MetadataContext;
 
 import java.util.List;
@@ -22,18 +22,18 @@ public class MetadataContainer {
 
   private Map<String, List<MetadataContext>> dccProjectCodeMap;
 
-  public MetadataContainer(@NonNull PortalNew portal, @NonNull  ProjectMetadataDAO projectMetadataDAO){
-    init(portal, projectMetadataDAO);
+  public MetadataContainer(@NonNull PortalNew portal, @NonNull SampleMetadataDAO sampleMetadataDAO){
+    init(portal, sampleMetadataDAO);
   }
 
-  private void init(PortalNew portal, ProjectMetadataDAO projectMetadataDAO){
+  private void init(PortalNew portal, SampleMetadataDAO sampleMetadataDAO){
     val builder = ImmutableList.<MetadataContext>builder();
     for (val fileMeta : portal.getFileMetas()){
       val fileMetaData = buildFileMetaData(fileMeta);
-      val aliquotId = fileMetaData.getVcfFilenameParser().getObjectId();
-      val projectMetadata = projectMetadataDAO.getProjectMetadataByAliquotId(aliquotId);
+      val filenameParser = fileMetaData.getVcfFilenameParser();
+      val sampleMetadata = sampleMetadataDAO.getSampleMetadataByFilenameParser(filenameParser);
       builder.add(MetadataContext.builder()
-          .projectMetadata(projectMetadata)
+          .sampleMetadata(sampleMetadata)
           .fileMetaData(fileMetaData)
           .build());
     }
@@ -55,10 +55,10 @@ public class MetadataContainer {
     return dccProjectCodeMap.get(dccProjectCode);
   }
 
-  public static Map<String, List<MetadataContext>> groupByDccProjectCode(List<MetadataContext> metadataContexts){
+  private static Map<String, List<MetadataContext>> groupByDccProjectCode(List<MetadataContext> metadataContexts){
     return metadataContexts
         .stream()
-        .collect(groupingBy(x -> x.getProjectMetadata().getDccProjectCode()));
+        .collect(groupingBy(x -> x.getSampleMetadata().getDccProjectCode()));
   }
 
 }

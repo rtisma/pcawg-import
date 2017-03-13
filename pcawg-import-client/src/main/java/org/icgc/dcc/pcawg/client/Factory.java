@@ -1,50 +1,60 @@
 package org.icgc.dcc.pcawg.client;
 
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.data.ProjectMetadataDAO;
+import org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO;
+import org.icgc.dcc.pcawg.client.data.SampleMetadataDAO;
 import org.icgc.dcc.pcawg.client.download.MetadataContainer;
 import org.icgc.dcc.pcawg.client.download.PortalFileDownloader;
 import org.icgc.dcc.pcawg.client.download.PortalNew;
 import org.icgc.dcc.pcawg.client.download.Storage;
-import org.icgc.dcc.pcawg.client.model.metadata.MetadataContext;
+import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.SSMMetadataImpl;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.tsv.impl.SSMMetadataTSVConverter;
 import org.icgc.dcc.pcawg.client.tsv.impl.SSMPrimaryTSVConverter;
-import org.icgc.dcc.pcawg.client.vcf.CallerTypes;
+import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
+
+import java.nio.file.Paths;
 
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.OUTPUT_TSV_DIRECTORY;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_FILENAME;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_URL;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_P_TSV_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_BYPASS_MD5_CHECK;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_OUTPUT_VCF_STORAGE_DIR;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_PERSIST_MODE;
-import static org.icgc.dcc.pcawg.client.data.FileProjectMetadataDAO.newFileProjectMetadataDAOAndDownload;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.UUID2BARCODE_SHEET_TSV_FILENAME;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.UUID2BARCODE_SHEET_TSV_URL;
+import static org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO.newFileSampleMetadataDAO;
 import static org.icgc.dcc.pcawg.client.download.PcawgVcfPortalAPIQueryCreator.newPcawgVcfPortalAPIQueryCreator;
 import static org.icgc.dcc.pcawg.client.download.PortalFileDownloader.newPortalFileDownloader;
-import static org.icgc.dcc.pcawg.client.vcf.CallerTypes.CONSENSUS;
+import static org.icgc.dcc.pcawg.client.download.Storage.downloadFileByURL;
+import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
 
 @NoArgsConstructor(access = PRIVATE)
+@Slf4j
 public class Factory {
 
   public static Storage newStorage() {
     return new Storage(STORAGE_PERSIST_MODE, STORAGE_OUTPUT_VCF_STORAGE_DIR, STORAGE_BYPASS_MD5_CHECK);
   }
 
-  public static PortalNew newPortal(CallerTypes callerType){
+  public static PortalNew newPortal(WorkflowTypes callerType){
     return PortalNew.builder()
         .jsonQueryGenerator(newPcawgVcfPortalAPIQueryCreator(callerType))
         .build();
   }
 
   public static MetadataContainer newMetadataContainer(){
-    return new MetadataContainer(newPortal(CONSENSUS), newProjectMetadataDAO());
+    return new MetadataContainer(newPortal(CONSENSUS), newSampleMetadataDAO());
   }
 
-  private static PortalFileDownloader newPortalFileDownloaderFromCallerType(CallerTypes callerType){
+  private static PortalFileDownloader newPortalFileDownloaderFromCallerType(WorkflowTypes callerType){
     return newPortalFileDownloader(newPortal(callerType), newStorage());
   }
 
@@ -52,25 +62,14 @@ public class Factory {
     return newPortalFileDownloaderFromCallerType(CONSENSUS);
   }
 
-  public static Transformer newTransformer(){
-    return null;
-//    return new Transformer();
-  }
-
-  public static ProjectMetadataDAO newProjectMetadataDAO(){
-    return newFileProjectMetadataDAOAndDownload();
-  }
-
-  public static SSMMetadata newSSMMetadata(MetadataContext context){
-    val fileMetaData  = context.getFileMetaData();
-    val projectMetadata = context.getProjectMetadata();
-    val variationCallingAlgorithm = fileMetaData.getVcfFilenameParser().getCallerId();
-    val dataType = fileMetaData.getVcfFilenameParser().getSubMutationType();
-    val dccProjectCode = projectMetadata.getDccProjectCode();
-    return SSMMetadataImpl.newSSMMetadataImpl(variationCallingAlgorithm,
-        projectMetadata.getMatchedSampleId(),
-        projectMetadata.getAnalysisId(variationCallingAlgorithm, dataType),
-        projectMetadata.getAnalyzedSampleId());
+  public static SSMMetadata newSSMMetadata(SampleMetadata sampleMetadata){
+    return SSMMetadataImpl.newSSMMetadataImpl(
+        sampleMetadata.getWorkflow(),
+        sampleMetadata.getMatchedSampleId(),
+        sampleMetadata.getAnalysisId(),
+        sampleMetadata.getAnalyzedSampleId(),
+        sampleMetadata.isUsProject(),
+        sampleMetadata.getAliquotId() );
   }
 
   public static Transformer<SSMMetadata> newSSMMetadataTransformer(String dccProjectCode){
@@ -81,5 +80,17 @@ public class Factory {
     return new Transformer<SSMPrimary>(OUTPUT_TSV_DIRECTORY,dccProjectCode, SSM_P_TSV_FILENAME, new SSMPrimaryTSVConverter());
   }
 
+  private static FileSampleMetadataDAO newFileSampleMetadataDAOAndDownload(){
+    val outputDir = Paths.get("").toAbsolutePath().toString();
+    log.info("Downloading [{}] to directory [{}] from url: {}", SAMPLE_SHEET_TSV_FILENAME, outputDir,SAMPLE_SHEET_TSV_URL);
+    val sampleSheetFile = downloadFileByURL(SAMPLE_SHEET_TSV_URL, SAMPLE_SHEET_TSV_FILENAME);
+    log.info("Downloading [{}] to directory [{}] from url: {}", UUID2BARCODE_SHEET_TSV_FILENAME, outputDir, UUID2BARCODE_SHEET_TSV_URL);
+    val uuid2BarcodeSheetFile = downloadFileByURL(UUID2BARCODE_SHEET_TSV_URL, UUID2BARCODE_SHEET_TSV_FILENAME);
+    log.info("Done downloading, creating FileSampleMetadataDAO");
+    return newFileSampleMetadataDAO(SAMPLE_SHEET_TSV_FILENAME, UUID2BARCODE_SHEET_TSV_FILENAME);
+  }
 
+  public static SampleMetadataDAO newSampleMetadataDAO(){
+    return newFileSampleMetadataDAOAndDownload();
+  }
 }
