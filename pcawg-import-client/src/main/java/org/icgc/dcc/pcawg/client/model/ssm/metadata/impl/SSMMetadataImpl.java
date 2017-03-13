@@ -3,6 +3,7 @@ package org.icgc.dcc.pcawg.client.model.ssm.metadata.impl;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.icgc.dcc.pcawg.client.model.ssm.NACodes;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -47,17 +48,17 @@ public class SSMMetadataImpl implements SSMMetadata {
 
   @Override
   public String getExperimentalProtocol() {
-    return DEFAULT_EMPTY;
+    return NACodes.DATA_VERIFIED_TO_BE_UNKNOWN.toString();
   }
 
   @Override
   public String getBaseCallingAlgorithm() {
-    return DEFAULT_EMPTY;
+    return NACodes.DATA_VERIFIED_TO_BE_UNKNOWN.toString();
   }
 
   @Override
   public String getAlignmentAlgorithm(){
-    return DEFAULT_EMPTY;
+    return NACodes.DATA_VERIFIED_TO_BE_UNKNOWN.toString();
   }
 
   @Override
@@ -67,7 +68,7 @@ public class SSMMetadataImpl implements SSMMetadata {
 
   @Override
   public String getOtherAnalysisAlgorithm() {
-    return DEFAULT_EMPTY;
+    return NACodes.DATA_VERIFIED_TO_BE_UNKNOWN.toString();
   }
 
   @Override
@@ -77,7 +78,7 @@ public class SSMMetadataImpl implements SSMMetadata {
 
   @Override
   public String getSeqCoverage() {
-    return DEFAULT_EMPTY;
+    return NACodes.DATA_VERIFIED_TO_BE_UNKNOWN.toString();
   }
 
   //TODO: need to implement

@@ -55,17 +55,17 @@ public abstract class AbstractSSMPrimaryBase implements SSMPrimary {
 
   @Override
   public String getExpressedAllele() {
-    return DEFAULT_EMPTY;
+    return NACodes.DATA_VERIFIED_TO_BE_UNKNOWN.toString();
   }
 
   @Override
   public String getQualityScore() {
-    return DEFAULT_EMPTY;
+    return NACodes.DATA_VERIFIED_TO_BE_UNKNOWN.toString();
   }
 
   @Override
   public String getProbability() {
-    return DEFAULT_EMPTY;
+    return NACodes.DATA_VERIFIED_TO_BE_UNKNOWN.toString();
   }
 
   private Optional<Integer> getIntAttribute(String attr) {
@@ -77,11 +77,11 @@ public abstract class AbstractSSMPrimaryBase implements SSMPrimary {
   }
 
   private Optional<Integer> getAltCount() {
-    return getIntAttribute("t_alt_count");
+    return getIntAttribute(T_ALT_COUNT);
   }
 
   private Optional<Integer> getRefCount() {
-    return getIntAttribute("t_ref_count");
+    return getIntAttribute(T_REF_COUNT);
   }
 
   //TODO: this is only for consensus and is baked in for now. Will need CallProcessors that implement specific ways to get the data needed, such as total_read_count, mutant_allele_read_count...etc
@@ -113,22 +113,22 @@ public abstract class AbstractSSMPrimaryBase implements SSMPrimary {
 
   @Override
   public String getVerificationPlatform() {
-    return DEFAULT_EMPTY;
+    return NACodes.DATA_VERIFIED_TO_BE_UNKNOWN.toString();
   }
 
   @Override
   public String getBiologicalValidationStatus() {
-    return DEFAULT_EMPTY;
+    return NACodes.DATA_VERIFIED_TO_BE_UNKNOWN.toString();
   }
 
   @Override
   public String getBiologicalValidationPlatform() {
-    return DEFAULT_EMPTY;
+    return NACodes.DATA_VERIFIED_TO_BE_UNKNOWN.toString();
   }
 
   @Override
   public String getNote() {
-    return DEFAULT_EMPTY;
+    return NACodes.DATA_VERIFIED_TO_BE_UNKNOWN.toString();
   }
 
   //For Andy, just a placeholder
