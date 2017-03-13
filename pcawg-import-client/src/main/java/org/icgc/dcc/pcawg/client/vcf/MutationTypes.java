@@ -32,6 +32,6 @@ public enum MutationTypes {
 
   @Override
   public String toString() {
-    return name();
+    return name;
   }
 }

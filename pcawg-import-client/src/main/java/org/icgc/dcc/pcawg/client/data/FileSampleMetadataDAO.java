@@ -6,27 +6,22 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.model.metadata.project.ProjectMetadata;
+import org.icgc.dcc.pcawg.client.model.metadata.file.FilenameParser;
+import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
 import org.icgc.dcc.pcawg.client.model.metadata.project.SampleSheetModel;
 import org.icgc.dcc.pcawg.client.model.metadata.project.Uuid2BarcodeSheetModel;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkState;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_FILENAME;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_URL;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.UUID2BARCODE_SHEET_TSV_FILENAME;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.UUID2BARCODE_SHEET_TSV_URL;
-import static org.icgc.dcc.pcawg.client.data.ProjectMetadataDAO.isUSProject;
-import static org.icgc.dcc.pcawg.client.download.Storage.downloadFileByURL;
+import static org.icgc.dcc.pcawg.client.data.SampleMetadataDAO.isUSProject;
 
 @Slf4j
-public class FileProjectMetadataDAO implements ProjectMetadataDAO {
+public class FileSampleMetadataDAO implements SampleMetadataDAO {
 
   private static final String WGS = "WGS";
   private static final String NORMAL = "normal";
@@ -40,7 +35,7 @@ public class FileProjectMetadataDAO implements ProjectMetadataDAO {
   private final List<SampleSheetModel> sampleSheetList;
   private final List<Uuid2BarcodeSheetModel> uuid2BarcodeSheetList;
 
-  public FileProjectMetadataDAO(String sampleSheetFilename, String uuid2BarcodeSheetFilename) {
+  public FileSampleMetadataDAO(String sampleSheetFilename, String uuid2BarcodeSheetFilename) {
     this.sampleSheetFilename = sampleSheetFilename;
     this.uuid2BarcodeSheetFilename = uuid2BarcodeSheetFilename;
     this.sampleSheetList = readSampleSheet();
@@ -75,7 +70,10 @@ public class FileProjectMetadataDAO implements ProjectMetadataDAO {
   }
 
   @Override
-  public ProjectMetadata getProjectMetadataByAliquotId(String aliquotId){
+  public SampleMetadata getSampleMetadataByFilenameParser(FilenameParser filenameParser){
+    val aliquotId = filenameParser.getAliquotId();
+    val workflow =  filenameParser.getWorkflow();
+    val dataType =  filenameParser.getDataType();
     val sampleSheetByAliquotId = getFirstSampleSheetByAliquotId(aliquotId);
     val dccProjectCode = sampleSheetByAliquotId.getDccProjectCode();
     val submitterSampleId = sampleSheetByAliquotId.getSubmitterSampleId();
@@ -84,11 +82,14 @@ public class FileProjectMetadataDAO implements ProjectMetadataDAO {
 
     val analyzedSampleId = getAnalyzedSampleId(isUsProject,submitterSampleId);
     val matchedSampleId = getMatchedSampleId(isUsProject,donorUniqueId);
-    return ProjectMetadata.builder()
+    return SampleMetadata.builder()
         .analyzedSampleId(analyzedSampleId)
         .dccProjectCode(dccProjectCode)
         .matchedSampleId(matchedSampleId)
         .aliquotId(aliquotId)
+        .isUsProject(isUsProject)
+        .dataType(dataType)
+        .workflow(workflow)
         .build();
   }
 
@@ -132,14 +133,8 @@ public class FileProjectMetadataDAO implements ProjectMetadataDAO {
     return builder.build();
   }
 
-  public static FileProjectMetadataDAO newFileProjectMetadataDAOAndDownload(){
-    val outputDir = Paths.get("").toAbsolutePath().toString();
-    log.info("Downloading [{}] to directory [{}] from url: {}", SAMPLE_SHEET_TSV_FILENAME, outputDir,SAMPLE_SHEET_TSV_URL);
-    val sampleSheetFile = downloadFileByURL(SAMPLE_SHEET_TSV_URL, SAMPLE_SHEET_TSV_FILENAME);
-    log.info("Downloading [{}] to directory [{}] from url: {}", UUID2BARCODE_SHEET_TSV_FILENAME, outputDir, UUID2BARCODE_SHEET_TSV_URL);
-    val uuid2BarcodeSheetFile = downloadFileByURL(UUID2BARCODE_SHEET_TSV_URL, UUID2BARCODE_SHEET_TSV_FILENAME);
-    log.info("Done downloading, creating FileProjectMetadataDAO");
-    return new FileProjectMetadataDAO(SAMPLE_SHEET_TSV_FILENAME, UUID2BARCODE_SHEET_TSV_FILENAME);
+  public static FileSampleMetadataDAO newFileSampleMetadataDAO(String sampleSheetFilename, String uuid2BarcodeSheetFilename){
+    return new FileSampleMetadataDAO(sampleSheetFilename, uuid2BarcodeSheetFilename);
   }
 
 }

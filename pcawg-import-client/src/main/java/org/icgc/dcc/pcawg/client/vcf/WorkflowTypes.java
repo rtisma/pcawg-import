@@ -26,7 +26,7 @@ import java.util.Set;
 
 @RequiredArgsConstructor
 @Getter
-public enum CallerTypes {
+public enum WorkflowTypes {
 
   CONSENSUS("consensus", ImmutableSet.of(" PCAWG SNV-MNV callers", "PCAWG InDel callers")),
   SANGER("sanger", ImmutableSet.of("Sanger variant call pipeline")),

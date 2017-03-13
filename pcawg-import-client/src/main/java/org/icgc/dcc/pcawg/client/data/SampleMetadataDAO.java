@@ -1,12 +1,13 @@
 package org.icgc.dcc.pcawg.client.data;
 
-import org.icgc.dcc.pcawg.client.model.metadata.project.ProjectMetadata;
+import org.icgc.dcc.pcawg.client.model.metadata.file.FilenameParser;
+import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
 
-public interface ProjectMetadataDAO {
+public interface SampleMetadataDAO {
 
   static boolean isUSProject(String projectCode){
     return projectCode.matches("^.*-US$");
   }
 
-  ProjectMetadata getProjectMetadataByAliquotId(String aliquotId);
+  SampleMetadata getSampleMetadataByFilenameParser(FilenameParser filenameParser);
 }
