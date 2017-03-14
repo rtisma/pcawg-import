@@ -7,16 +7,16 @@ import org.icgc.dcc.pcawg.client.model.ssm.NACodes;
 import org.icgc.dcc.pcawg.client.vcf.MutationTypes;
 
 @Slf4j
-public class IndelSSMPrimary extends AbstractSSMPrimaryBase {
+public class IndelPcawgSSMPrimary extends AbstractPcawgSSMPrimaryBase {
 
 
-  public static final IndelSSMPrimary newIndelSSMPrimary(final VariantContext variant, final String analysisId, final String analyzedSampleId)  {
-    return new IndelSSMPrimary(variant, analysisId, analyzedSampleId);
+  public static final IndelPcawgSSMPrimary newIndelSSMPrimary(final VariantContext variant, final String analysisId, final String analyzedSampleId)  {
+    return new IndelPcawgSSMPrimary(variant, analysisId, analyzedSampleId);
   }
 
   private final MutationTypes mutationType;
 
-  public IndelSSMPrimary(VariantContext variant, String analysisId, String analyzedSampleId) {
+  public IndelPcawgSSMPrimary(VariantContext variant, String analysisId, String analyzedSampleId) {
     super(variant, analysisId, analyzedSampleId);
     this.mutationType = calcMutationType();
   }

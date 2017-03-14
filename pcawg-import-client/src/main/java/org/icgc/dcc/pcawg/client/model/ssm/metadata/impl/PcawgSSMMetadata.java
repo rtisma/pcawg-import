@@ -9,21 +9,20 @@ import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import static lombok.AccessLevel.PRIVATE;
 
 @RequiredArgsConstructor(access = PRIVATE)
-public class SSMMetadataImpl implements SSMMetadata {
+public class PcawgSSMMetadata implements SSMMetadata {
   private static final String DEFAULT_ASSEMBLY_VERSION = "GRCh37";
   private static final String DEFAULT_PLATFORM = "Illumina HiSeq";
   private static final String DEFAULT_SEQUENCING_STRATEGY = "WGS";
   private static final String TCGA = "TCGA";
   private static final String EGA = "EGA";
 
-  public static final SSMMetadataImpl newSSMMetadataImpl(String variationCallingAlgorithm,
+  public static final PcawgSSMMetadata newSSMMetadataImpl(String variationCallingAlgorithm,
       String matchedSampleId,
       String analysisId,
       String analyzedSampleId,
       boolean isUsProject,
-      String aliquotId
-      ){
-    return new SSMMetadataImpl(variationCallingAlgorithm, matchedSampleId, analysisId, analyzedSampleId, isUsProject, aliquotId);
+      String aliquotId ){
+    return new PcawgSSMMetadata(variationCallingAlgorithm, matchedSampleId, analysisId, analyzedSampleId, isUsProject, aliquotId);
   }
 
   @NonNull
@@ -96,9 +95,12 @@ public class SSMMetadataImpl implements SSMMetadata {
     return isUsProject ? TCGA:EGA;
   }
 
+  /**
+   * TODO: [DCC-5507] hardcoded nonUS RawDataAccession id. Once DCC-5507 is complete, will be able to create class that retreives this information. For now baked in
+   */
   @Override
   public String getRawDataAccession() {
-    return isUsProject ? getAnalyzedSampleId() : aliquotId;
+    return isUsProject ? getAnalyzedSampleId() : "EGAS00001001692";
   }
 
   //For andy, just a placeholder

@@ -32,7 +32,7 @@ import static org.icgc.dcc.pcawg.client.Factory.newSSMMetadata;
 import static org.icgc.dcc.pcawg.client.Factory.newSSMMetadataTransformer;
 import static org.icgc.dcc.pcawg.client.Factory.newSSMPrimaryTransformer;
 import static org.icgc.dcc.pcawg.client.Factory.newStorage;
-import static org.icgc.dcc.pcawg.client.model.ssm.primary.impl.IndelSSMPrimary.newIndelSSMPrimary;
+import static org.icgc.dcc.pcawg.client.model.ssm.primary.impl.IndelPcawgSSMPrimary.newIndelSSMPrimary;
 
 @Slf4j
 @SpringBootApplication

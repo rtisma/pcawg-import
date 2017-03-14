@@ -11,7 +11,7 @@ import org.icgc.dcc.pcawg.client.download.PortalNew;
 import org.icgc.dcc.pcawg.client.download.Storage;
 import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
-import org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.SSMMetadataImpl;
+import org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.PcawgSSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.tsv.impl.SSMMetadataTSVConverter;
 import org.icgc.dcc.pcawg.client.tsv.impl.SSMPrimaryTSVConverter;
@@ -63,7 +63,7 @@ public class Factory {
   }
 
   public static SSMMetadata newSSMMetadata(SampleMetadata sampleMetadata){
-    return SSMMetadataImpl.newSSMMetadataImpl(
+    return PcawgSSMMetadata.newSSMMetadataImpl(
         sampleMetadata.getWorkflow(),
         sampleMetadata.getMatchedSampleId(),
         sampleMetadata.getAnalysisId(),

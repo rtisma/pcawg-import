@@ -15,10 +15,10 @@ import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PROTECTED;
 
 /**
- * Common implementations for all subclasses of AbstractSSMPrimaryBase
+ * Common implementations for all subclasses of AbstractPcawgSSMPrimaryBase
  */
 @Slf4j
-public abstract class AbstractSSMPrimaryBase implements SSMPrimary {
+public abstract class AbstractPcawgSSMPrimaryBase implements SSMPrimary {
 
   private static final int DEFAULT_STRAND = 1;
   private static final String DEFAULT_VERIFICATION_STATUS = "not tested";
@@ -39,7 +39,7 @@ public abstract class AbstractSSMPrimaryBase implements SSMPrimary {
   @Getter
   private final String analyzedSampleId;
 
-  public AbstractSSMPrimaryBase(VariantContext variant, String analysisId, String analyzedSampleId) {
+  public AbstractPcawgSSMPrimaryBase(VariantContext variant, String analysisId, String analyzedSampleId) {
     this.variant = variant;
     this.analysisId = analysisId;
     this.analyzedSampleId = analyzedSampleId;

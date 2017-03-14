@@ -7,7 +7,7 @@ import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 
 @Builder
 @Value
-public class SSMPrimaryPojo implements SSMPrimary {
+public class PlainSSMPrimary implements SSMPrimary {
 
  @NonNull private final String   analysisId;
  @NonNull private final String   analyzedSampleId;
