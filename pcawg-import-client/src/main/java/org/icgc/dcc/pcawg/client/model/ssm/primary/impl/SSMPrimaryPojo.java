@@ -1,12 +1,13 @@
-package org.icgc.dcc.pcawg.client.model.ssm.primary;
+package org.icgc.dcc.pcawg.client.model.ssm.primary.impl;
 
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 
 @Builder
 @Value
-public class SSMPrimaryPojo implements SSMPrimary{
+public class SSMPrimaryPojo implements SSMPrimary {
 
  @NonNull private final String   analysisId;
  @NonNull private final String   analyzedSampleId;

@@ -6,7 +6,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
-import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimaryPojo;
+import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.SSMPrimaryPojo;
 import org.icgc.dcc.pcawg.client.vcf.MutationTypes;
 import org.junit.Test;
 
@@ -24,6 +24,8 @@ public class SSMTest {
   private static final String DUMMY_ANALYZED_SAMPLE_ID= "myAnalyzedSampleId";
   private static final String INDEL_INSERTION_VCF_FILENAME = "fixtures/test_indel_insertion.vcf";
   private static final String INDEL_DELETION_VCF_FILENAME = "fixtures/test_indel_deletion.vcf";
+  private static final String SNV_MNV_SINGLE_BASE_VCF_FILENAME = "fixtures/test_snv_mnv_single_base.vcf";
+  private static final String SNV_MNV_MULTIPLE_BASE_VCF_FILENAME = "fixtures/test_snv_mnv_multiple_base.vcf";
 
   private static SSMPrimary getFirstSSMIndelPrimary(String vcfFilename){
     val vcf = readVCF(vcfFilename);
