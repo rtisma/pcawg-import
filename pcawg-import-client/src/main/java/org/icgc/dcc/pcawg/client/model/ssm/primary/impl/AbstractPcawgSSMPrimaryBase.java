@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.icgc.dcc.common.core.util.Joiners;
 import org.icgc.dcc.pcawg.client.model.ssm.NACodes;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 
@@ -24,7 +25,7 @@ public abstract class AbstractPcawgSSMPrimaryBase implements SSMPrimary {
   private static final String DEFAULT_VERIFICATION_STATUS = "not tested";
   private static final String T_REF_COUNT = "t_ref_count";
   private static final String T_ALT_COUNT = "t_alt_count";
-  private static final Joiner ALLELE_JOINER = Joiner.on(" / ");
+  private static final Joiner ALLELE_JOINER = Joiners.SLASH;
 
 
   @NonNull
