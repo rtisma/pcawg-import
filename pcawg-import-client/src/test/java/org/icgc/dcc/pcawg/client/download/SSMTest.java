@@ -26,10 +26,7 @@ public class SSMTest {
 
   // load vcf and iterate through each variantContext element
   private static final boolean REQUIRE_INDEX_CFG = false;
-  private static final String INDEL_FIXTURE_FILENAME =
-      "f9c4e06c-e8a6-613b-e040-11ac0d4828ba.consensus.20160830.somatic.indel.vcf.gz";
-//  private static final String DUMMY_ANALYSIS_ID = "myAnalysisId";
-//  private static final String DUMMY_ANALYZED_SAMPLE_ID = "myAnalyzedSampleId";
+  private static final String INDEL_FIXTURE_FILENAME = "f9c4e06c-e8a6-613b-e040-11ac0d4828ba.consensus.20160830.somatic.indel.vcf.gz";
   private static final String INDEL_INSERTION_VCF_FILENAME = "fixtures/test_indel_insertion.vcf";
   private static final String INDEL_DELETION_VCF_FILENAME = "fixtures/test_indel_deletion.vcf";
   private static final String SNV_MNV_SINGLE_BASE_VCF_FILENAME = "fixtures/test_snv_mnv_single_base.vcf";
@@ -46,6 +43,15 @@ public class SSMTest {
   private static final String DUMMY_ANALYZED_SAMPLE_ID = "myAnalyzedSampleId";
   private static final String DUMMY_MATCHED_SAMPLE_ID = "myMatchedSampleId";
 
+  private static final String DEFAULT_ASSEMBLY_VERSION = "GRCh37";
+  private static final String DEFAULT_PLATFORM = "Illumina HiSeq";
+  private static final String DEFAULT_VARIATION_CALLING_ALGORITHM= "consensus";
+  private static final String NA_VALUE = "-777";
+  private static final String WGS = "WGS";
+  private static final String EGA = "EGA";
+  private static final String TCGA = "TCGA";
+
+
   private static final SampleMetadataBuilder TEMPLATE_SAMPLE_METADATA_BUILDER = SampleMetadata.builder()
       .analyzedSampleId(DUMMY_ANALYZED_SAMPLE_ID)
       .matchedSampleId(DUMMY_MATCHED_SAMPLE_ID)
@@ -61,9 +67,6 @@ public class SSMTest {
   private static final SampleMetadata DUMMY_US_SAMPLE_METADATA = TEMPLATE_SAMPLE_METADATA_BUILDER
       .isUsProject(true)
       .build();
-
-
-
 
   private static SSMPrimary getFirstSSMIndelPrimary(String vcfFilename) {
     val vcf = readVCF(vcfFilename);
@@ -249,6 +252,32 @@ public class SSMTest {
     return new VCFFileReader(file, REQUIRE_INDEX_CFG);
   }
 
+  private void assertCommonSMMMetadata(SSMMetadata ssmMetadata){
+    assertThat(ssmMetadata.getAnalysisId()).isEqualTo(DUMMY_ANALYSIS_ID);
+    assertThat(ssmMetadata.getAnalyzedSampleId()).isEqualTo(DUMMY_ANALYZED_SAMPLE_ID);
+    assertThat(ssmMetadata.getMatchedSampleId()).isEqualTo(DUMMY_MATCHED_SAMPLE_ID);
+    assertThat(ssmMetadata.getAssemblyVersion()).isEqualTo(DEFAULT_ASSEMBLY_VERSION);
+    assertThat(ssmMetadata.getPlatform()).isEqualTo(DEFAULT_PLATFORM);
+    assertThat(ssmMetadata.getExperimentalProtocol()).isEqualTo(NA_VALUE);
+    assertThat(ssmMetadata.getBaseCallingAlgorithm()).isEqualTo(NA_VALUE);
+    assertThat(ssmMetadata.getAlignmentAlgorithm()).isEqualTo(NA_VALUE);
+    assertThat(ssmMetadata.getVariationCallingAlgorithm()).isEqualTo(DEFAULT_VARIATION_CALLING_ALGORITHM);
+    assertThat(ssmMetadata.getOtherAnalysisAlgorithm()).isEqualTo(NA_VALUE);
+    assertThat(ssmMetadata.getSequencingStrategy()).isEqualTo(WGS);
+    assertThat(ssmMetadata.getSeqCoverage()).isEqualTo(NA_VALUE);
+  }
+
+  private static final SSMMetadata createSSMMetadata(SampleMetadata sampleMetadata){
+    return PcawgSSMMetadata.newSSMMetadataImpl(
+        sampleMetadata.getWorkflow(),
+        sampleMetadata.getMatchedSampleId(),
+        sampleMetadata.getAnalysisId(),
+        sampleMetadata.getAnalyzedSampleId(),
+        sampleMetadata.isUsProject(),
+        sampleMetadata.getAliquotId());
+  }
+
+
   @Test
   public void testIndelInsertion() {
     val ssmIndelPrimaryActual = getFirstSSMIndelPrimary(INDEL_INSERTION_VCF_FILENAME);
@@ -312,39 +341,6 @@ public class SSMTest {
     assertCommonSMMMetadata(ssmMetadata);
     assertThat(ssmMetadata.getRawDataRepository()).isEqualTo(TCGA);
     assertThat(ssmMetadata.getRawDataAccession()).isEqualTo(DUMMY_US_SAMPLE_METADATA.getAnalyzedSampleId());
-  }
-
-  private static final String DEFAULT_ASSEMBLY_VERSION = "GRCh37";
-  private static final String DEFAULT_PLATFORM = "Illumina HiSeq";
-  private static final String DEFAULT_VARIATION_CALLING_ALGORITHM= "consensus";
-  private static final String NA_VALUE = "-777";
-  private static final String WGS = "WGS";
-  private static final String EGA = "EGA";
-  private static final String TCGA = "TCGA";
-
-  private void assertCommonSMMMetadata(SSMMetadata ssmMetadata){
-    assertThat(ssmMetadata.getAnalysisId()).isEqualTo(DUMMY_ANALYSIS_ID);
-    assertThat(ssmMetadata.getAnalyzedSampleId()).isEqualTo(DUMMY_ANALYZED_SAMPLE_ID);
-    assertThat(ssmMetadata.getMatchedSampleId()).isEqualTo(DUMMY_MATCHED_SAMPLE_ID);
-    assertThat(ssmMetadata.getAssemblyVersion()).isEqualTo(DEFAULT_ASSEMBLY_VERSION);
-    assertThat(ssmMetadata.getPlatform()).isEqualTo(DEFAULT_PLATFORM);
-    assertThat(ssmMetadata.getExperimentalProtocol()).isEqualTo(NA_VALUE);
-    assertThat(ssmMetadata.getBaseCallingAlgorithm()).isEqualTo(NA_VALUE);
-    assertThat(ssmMetadata.getAlignmentAlgorithm()).isEqualTo(NA_VALUE);
-    assertThat(ssmMetadata.getVariationCallingAlgorithm()).isEqualTo(DEFAULT_VARIATION_CALLING_ALGORITHM);
-    assertThat(ssmMetadata.getOtherAnalysisAlgorithm()).isEqualTo(NA_VALUE);
-    assertThat(ssmMetadata.getSequencingStrategy()).isEqualTo(WGS);
-    assertThat(ssmMetadata.getSeqCoverage()).isEqualTo(NA_VALUE);
-  }
-
-  private static final SSMMetadata createSSMMetadata(SampleMetadata sampleMetadata){
-    return PcawgSSMMetadata.newSSMMetadataImpl(
-        sampleMetadata.getWorkflow(),
-        sampleMetadata.getMatchedSampleId(),
-        sampleMetadata.getAnalysisId(),
-        sampleMetadata.getAnalyzedSampleId(),
-        sampleMetadata.isUsProject(),
-        sampleMetadata.getAliquotId());
   }
 
   /**
