@@ -58,7 +58,7 @@ public class SnvMnvSSMPrimary extends AbstractSSMPrimaryBase {
 
   @Override
   public String getControlGenotype() {
-    return getReferenceAlleleString()+"/"+getReferenceGenomeAllele();
+    return joinAlleles(getReferenceAlleleString(),getReferenceGenomeAllele());
   }
 
   @Override
@@ -72,7 +72,7 @@ public class SnvMnvSSMPrimary extends AbstractSSMPrimaryBase {
    */
   @Override
   public String getTumorGenotype() {
-    return getReferenceAlleleString()+"/"+getAlternativeAlleleString();
+    return joinAlleles(getReferenceAlleleString(),getAlternativeAlleleString());
   }
 
 

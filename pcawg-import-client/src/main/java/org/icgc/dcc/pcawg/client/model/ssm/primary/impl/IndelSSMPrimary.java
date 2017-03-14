@@ -1,6 +1,5 @@
 package org.icgc.dcc.pcawg.client.model.ssm.primary.impl;
 
-import com.google.common.base.Joiner;
 import htsjdk.variant.variantcontext.VariantContext;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -10,7 +9,6 @@ import org.icgc.dcc.pcawg.client.vcf.MutationTypes;
 @Slf4j
 public class IndelSSMPrimary extends AbstractSSMPrimaryBase {
 
-  private static final Joiner ALLELE_JOINER = Joiner.on(" / ");
 
   public static final IndelSSMPrimary newIndelSSMPrimary(final VariantContext variant, final String analysisId, final String analyzedSampleId)  {
     return new IndelSSMPrimary(variant, analysisId, analyzedSampleId);
@@ -74,8 +72,8 @@ public class IndelSSMPrimary extends AbstractSSMPrimaryBase {
   public String getControlGenotype() {
     val allele = getReferenceAlleleWithFirstUpstreamBaseRemoved();
     return getValueBasedOnMutationType(
-        ALLELE_JOINER.join("-","-"),
-        ALLELE_JOINER.join(allele, allele));
+        joinAlleles("-","-"),
+        joinAlleles(allele, allele));
   }
 
   private String getReferenceAlleleWithFirstUpstreamBaseRemoved(){
@@ -95,12 +93,11 @@ public class IndelSSMPrimary extends AbstractSSMPrimaryBase {
     return getValueBasedOnMutationType("-", getReferenceAlleleWithFirstUpstreamBaseRemoved());
   }
 
-
   @Override
   public String getTumorGenotype() {
     return getValueBasedOnMutationType(
-        ALLELE_JOINER.join("-",getAlternativeAlleleWithFirstUpstreamBaseRemoved()),
-        ALLELE_JOINER.join(getReferenceAlleleWithFirstUpstreamBaseRemoved(),"-" ));
+        joinAlleles("-",getAlternativeAlleleWithFirstUpstreamBaseRemoved()),
+        joinAlleles(getReferenceAlleleWithFirstUpstreamBaseRemoved(),"-" ));
   }
 
   @Override

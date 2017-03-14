@@ -14,6 +14,7 @@ import java.io.File;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.pcawg.client.model.ssm.primary.impl.IndelSSMPrimary.newIndelSSMPrimary;
+import static org.icgc.dcc.pcawg.client.model.ssm.primary.impl.SnvMnvSSMPrimary.newSnvMnvSSMPrimary;
 
 @Slf4j
 public class SSMTest {
@@ -35,6 +36,16 @@ public class SSMTest {
           variant,
           DUMMY_ANALYSIS_ID,
           DUMMY_ANALYZED_SAMPLE_ID);
+      break; //only first line
+    }
+    return ssmPrimary;
+  }
+
+  private static SSMPrimary getFirstSSMSnvMnvPrimary(String vcfFilename){
+    val vcf = readVCF(vcfFilename);
+    SSMPrimary ssmPrimary = null;
+    for (val variant : vcf){
+      ssmPrimary = newSnvMnvSSMPrimary(variant,DUMMY_ANALYSIS_ID,DUMMY_ANALYZED_SAMPLE_ID);
       break; //only first line
     }
     return ssmPrimary;
@@ -105,6 +116,7 @@ public class SSMTest {
     val refFirstUpstreamRemoved = ref.substring(1);
     val altFirstUpstreamRemoved = alt.substring(1);
     assertThat(refLength -1).isEqualTo(refFirstUpstreamRemoved.length());
+    assertThat(altLength -1).isEqualTo(altFirstUpstreamRemoved.length());
     return SSMPrimaryPojo.builder()
         .analysisId(DUMMY_ANALYSIS_ID)
         .analyzedSampleId(DUMMY_ANALYZED_SAMPLE_ID)
@@ -118,6 +130,64 @@ public class SSMTest {
         .mutatedFromAllele("-")
         .tumorGenotype("- / "+altFirstUpstreamRemoved)
         .mutatedToAllele(altFirstUpstreamRemoved)
+        .expressedAllele("-777")
+        .qualityScore("-777")
+        .probability("-777")
+        .totalReadCount(tAltCount+tRefCount)
+        .mutantAlleleReadCount(tAltCount)
+        .verificationStatus("not tested")
+        .verificationPlatform("-777")
+        .biologicalValidationStatus("-777")
+        .biologicalValidationPlatform("-777")
+        .note("-777")
+        .pcawgFlag(true)
+        .build();
+  }
+
+  private static SSMPrimary createSingleBase(String chromosome, int pos, String ref, String alt, int tRefCount, int tAltCount){
+    val refLength = ref.length();
+    return SSMPrimaryPojo.builder()
+        .analysisId(DUMMY_ANALYSIS_ID)
+        .analyzedSampleId(DUMMY_ANALYZED_SAMPLE_ID)
+        .mutationType(MutationTypes.SINGLE_BASE_SUBSTITUTION.toString())
+        .chromosome(chromosome)
+        .chromosomeStart(pos)
+        .chromosomeEnd(pos+refLength-1)
+        .chromosomeStrand(1)
+        .referenceGenomeAllele(ref)
+        .controlGenotype(ref+" / "+ref)
+        .mutatedFromAllele(ref)
+        .tumorGenotype(ref+" / "+alt)
+        .mutatedToAllele(alt)
+        .expressedAllele("-777")
+        .qualityScore("-777")
+        .probability("-777")
+        .totalReadCount(tAltCount+tRefCount)
+        .mutantAlleleReadCount(tAltCount)
+        .verificationStatus("not tested")
+        .verificationPlatform("-777")
+        .biologicalValidationStatus("-777")
+        .biologicalValidationPlatform("-777")
+        .note("-777")
+        .pcawgFlag(true)
+        .build();
+  }
+
+  private static SSMPrimary createMultipleBase(String chromosome, int pos, String ref, String alt, int tRefCount, int tAltCount){
+    val refLength = ref.length();
+    return SSMPrimaryPojo.builder()
+        .analysisId(DUMMY_ANALYSIS_ID)
+        .analyzedSampleId(DUMMY_ANALYZED_SAMPLE_ID)
+        .mutationType(MutationTypes.MULTIPLE_BASE_SUBSTITUTION.toString())
+        .chromosome(chromosome)
+        .chromosomeStart(pos)
+        .chromosomeEnd(pos+refLength-1)
+        .chromosomeStrand(1)
+        .referenceGenomeAllele(ref)
+        .controlGenotype(ref+" / "+ref)
+        .mutatedFromAllele(ref)
+        .tumorGenotype(ref+" / "+alt)
+        .mutatedToAllele(alt)
         .expressedAllele("-777")
         .qualityScore("-777")
         .probability("-777")
@@ -167,6 +237,35 @@ public class SSMTest {
     assertThat(ssmIndelPrimaryActual).isNotNull();
     assertSSMPrimary(ssmIndelPrimaryActual, ssmIndelPrimaryExpected);
   }
+
+  @Test
+  public void testSnvMnvSingleBase(){
+    val ssmSnvMnvPrimaryActual = getFirstSSMSnvMnvPrimary(SNV_MNV_SINGLE_BASE_VCF_FILENAME);
+    val pos = 2897557;
+    val ref = "A";
+    val alt = "C";
+    val chromosome = "1";
+    val t_alt_count =1;
+    val t_ref_count = 52;
+    val ssmSnvMnvPrimaryExpected = createSingleBase(chromosome, pos, ref, alt, t_ref_count, t_alt_count);
+    assertThat(ssmSnvMnvPrimaryActual).isNotNull();
+    assertSSMPrimary(ssmSnvMnvPrimaryActual, ssmSnvMnvPrimaryExpected);
+  }
+
+  @Test
+  public void testSnvMnvMultipleBase(){
+    val ssmSnvMnvPrimaryActual = getFirstSSMSnvMnvPrimary(SNV_MNV_MULTIPLE_BASE_VCF_FILENAME);
+    val pos = 2897557;
+    val ref = "ATG";
+    val alt = "AGT";
+    val chromosome = "1";
+    val t_alt_count =1;
+    val t_ref_count = 52;
+    val ssmSnvMnvPrimaryExpected = createMultipleBase(chromosome, pos, ref, alt, t_ref_count, t_alt_count);
+    assertThat(ssmSnvMnvPrimaryActual).isNotNull();
+    assertSSMPrimary(ssmSnvMnvPrimaryActual, ssmSnvMnvPrimaryExpected);
+  }
+
 
 
 }

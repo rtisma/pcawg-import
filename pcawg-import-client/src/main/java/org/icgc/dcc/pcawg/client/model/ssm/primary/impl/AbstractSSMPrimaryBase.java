@@ -1,5 +1,6 @@
 package org.icgc.dcc.pcawg.client.model.ssm.primary.impl;
 
+import com.google.common.base.Joiner;
 import htsjdk.variant.variantcontext.VariantContext;
 import lombok.Getter;
 import lombok.NonNull;
@@ -23,7 +24,7 @@ public abstract class AbstractSSMPrimaryBase implements SSMPrimary {
   private static final String DEFAULT_VERIFICATION_STATUS = "not tested";
   private static final String T_REF_COUNT = "t_ref_count";
   private static final String T_ALT_COUNT = "t_alt_count";
-
+  private static final Joiner ALLELE_JOINER = Joiner.on(" / ");
 
 
   @NonNull
@@ -162,6 +163,10 @@ public abstract class AbstractSSMPrimaryBase implements SSMPrimary {
   protected String getAlternativeAlleleString() {
     checkState(getVariant().getAlternateAlleles().size() == 1, "There is more than one alternative allele");
     return getVariant().getAlternateAllele(0).getBaseString(); //get first alternative allele
+  }
+
+  protected String joinAlleles(String ref, String alt){
+    return ALLELE_JOINER.join(ref, alt);
   }
 }
 
