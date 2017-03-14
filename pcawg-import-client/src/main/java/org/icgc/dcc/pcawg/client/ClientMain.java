@@ -21,6 +21,8 @@ import htsjdk.variant.vcf.VCFFileReader;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
+import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.SnvMnvPcawgSSMPrimary;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -66,18 +68,21 @@ public class ClientMain implements CommandLineRunner {
         ssmMetadataTransformer.transform(ssmMetadata);
         val vcf = new VCFFileReader(file, REQUIRE_INDEX_CFG);
         for (val variant : vcf){
+          SSMPrimary ssmPrimary = null;
             if (dataType.toLowerCase().contains("indel")){
-                val ssmPrimary = newIndelSSMPrimary(
+              ssmPrimary = newIndelSSMPrimary(
                           variant,
                           sampleMetadata.getAnalysisId(),
                           sampleMetadata.getAnalyzedSampleId());
-                ssmPrimaryTransformer.transform(ssmPrimary);
             } else if(dataType.toLowerCase().contains("snv_mnv")){
-
-
+              ssmPrimary = SnvMnvPcawgSSMPrimary.newSnvMnvSSMPrimary(
+                  variant,
+                  sampleMetadata.getAnalysisId(),
+                  sampleMetadata.getAnalyzedSampleId());
             } else {
               throw new IllegalStateException("The dataType "+dataType+" is unrecognized");
             }
+          ssmPrimaryTransformer.transform(ssmPrimary);
         }
       }
       ssmPrimaryTransformer.close();
