@@ -25,7 +25,8 @@ public enum MutationTypes {
   INSERTION_LTE_200BP("insertion of <=200bp"),
   DELETION_LTE_200BP("deletion of <=200bp"),
   SINGLE_BASE_SUBSTITUTION("single base substitution"),
-  MULTIPLE_BASE_SUBSTITUTION("multiple base substitution (>=2bp and <=200bp)");
+  MULTIPLE_BASE_SUBSTITUTION("multiple base substitution (>=2bp and <=200bp)"),
+  UNKNOWN("unknown");
 
   @NonNull
   private final String name;

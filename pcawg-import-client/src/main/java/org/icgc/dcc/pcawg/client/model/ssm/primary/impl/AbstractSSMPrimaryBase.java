@@ -10,6 +10,7 @@ import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 
 import java.util.Optional;
 
+import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PROTECTED;
 
 /**
@@ -137,15 +138,30 @@ public abstract class AbstractSSMPrimaryBase implements SSMPrimary {
     return true;
   }
 
-  protected int getReferanceAlleleLength(){
+  protected int getReferenceAlleleLength(){
     return variant.getReference().length();
   }
 
+  protected String getReferenceAlleleString(){
+    return variant.getReference().getBaseString();
+  }
+
   /**
-   * TODO: Assume only ONE alternative allele for PCAWG data
+   * TODO: Assumption is there there is ONLY ONE alternative allele.
+   * @throws IllegalStateException for when there is more than one alternative allele
    */
   protected int getAlternativeAlleleLength(){
+    checkState(variant.getAlternateAlleles().size() == 1, "There is more than one alternative allele");
     return variant.getAlternateAllele(0).length();
+  }
+
+  /**
+   * TODO: Assumption is there there is ONLY ONE alternative allele.
+   * @throws IllegalStateException for when there is more than one alternative allele
+   */
+  protected String getAlternativeAlleleString() {
+    checkState(getVariant().getAlternateAlleles().size() == 1, "There is more than one alternative allele");
+    return getVariant().getAlternateAllele(0).getBaseString(); //get first alternative allele
   }
 }
 

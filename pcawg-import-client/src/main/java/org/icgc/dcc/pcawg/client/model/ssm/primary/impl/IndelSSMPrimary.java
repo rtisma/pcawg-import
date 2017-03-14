@@ -1,5 +1,6 @@
 package org.icgc.dcc.pcawg.client.model.ssm.primary.impl;
 
+import com.google.common.base.Joiner;
 import htsjdk.variant.variantcontext.VariantContext;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -9,25 +10,42 @@ import org.icgc.dcc.pcawg.client.vcf.MutationTypes;
 @Slf4j
 public class IndelSSMPrimary extends AbstractSSMPrimaryBase {
 
+  private static final Joiner ALLELE_JOINER = Joiner.on(" / ");
 
   public static final IndelSSMPrimary newIndelSSMPrimary(final VariantContext variant, final String analysisId, final String analyzedSampleId)  {
     return new IndelSSMPrimary(variant, analysisId, analyzedSampleId);
   }
 
+  private final MutationTypes mutationType;
+
   public IndelSSMPrimary(VariantContext variant, String analysisId, String analyzedSampleId) {
     super(variant, analysisId, analyzedSampleId);
+    this.mutationType = calcMutationType();
+  }
+
+
+  @Override public int hashCode() {
+    return getMutationType() != null ? getMutationType().hashCode() : 0;
+  }
+
+  private MutationTypes calcMutationType(){
+    val refLength = getReferenceAlleleLength();
+    val altLength = getAlternativeAlleleLength();
+    if(altLength >refLength){
+      return MutationTypes.INSERTION_LTE_200BP;
+    } else if(altLength < refLength){
+      return MutationTypes.DELETION_LTE_200BP;
+    } else {
+      return MutationTypes.UNKNOWN;
+    }
   }
 
   @Override
   public String getMutationType()  {
-    val refLength = getReferanceAlleleLength();
-    val altLength = getAlternativeAlleleLength();
-    if(altLength > refLength){
-      return MutationTypes.INSERTION_LTE_200BP.toString();
-    } else if(altLength <  refLength){
-      return MutationTypes.DELETION_LTE_200BP.toString();
+    if (mutationType == MutationTypes.UNKNOWN){
+      return NACodes.CORRUPTED_DATA.toString();
     } else {
-      return NACodes.DATA_VERIFIED_TO_BE_UNKNOWN.toString();
+      return mutationType.toString();
     }
   }
 
@@ -38,32 +56,65 @@ public class IndelSSMPrimary extends AbstractSSMPrimaryBase {
 
   @Override
   public int getChromosomeEnd() {
-    return 0;
+    int end = NACodes.CORRUPTED_DATA.toInt();
+    if (mutationType == MutationTypes.INSERTION_LTE_200BP){
+      end = getVariant().getStart()+1;
+    } else if (mutationType == MutationTypes.DELETION_LTE_200BP){
+      end = getVariant().getStart()+getReferenceAlleleLength()-1;
+    }
+    return end;
   }
 
   @Override
   public String getReferenceGenomeAllele() {
-    return "NEED_TO_IMPL";
+    return getValueBasedOnMutationType("-", getReferenceAlleleWithFirstUpstreamBaseRemoved());
   }
 
   @Override
   public String getControlGenotype() {
-    return "NEED_TO_IMPL";
+    val allele = getReferenceAlleleWithFirstUpstreamBaseRemoved();
+    return getValueBasedOnMutationType(
+        ALLELE_JOINER.join("-","-"),
+        ALLELE_JOINER.join(allele, allele));
+  }
+
+  private String getReferenceAlleleWithFirstUpstreamBaseRemoved(){
+    return getReferenceAlleleString().substring(1);
+  }
+
+  /**
+   * TODO: Assumption is there there is ONLY ONE alternative allele.
+   * @throws IllegalStateException for when there is more than one alternative allele
+   */
+  private String getAlternativeAlleleWithFirstUpstreamBaseRemoved(){
+    return getAlternativeAlleleString().substring(1);
   }
 
   @Override
   public String getMutatedFromAllele() {
-    return "NEED_TO_IMPL";
+    return getValueBasedOnMutationType("-", getReferenceAlleleWithFirstUpstreamBaseRemoved());
   }
+
 
   @Override
   public String getTumorGenotype() {
-    return "NEED_TO_IMPL";
+    return getValueBasedOnMutationType(
+        ALLELE_JOINER.join("-",getAlternativeAlleleWithFirstUpstreamBaseRemoved()),
+        ALLELE_JOINER.join(getReferenceAlleleWithFirstUpstreamBaseRemoved(),"-" ));
   }
 
   @Override
   public String getMutatedToAllele() {
-    return "NEED_TO_IMPL";
+    return getValueBasedOnMutationType(getAlternativeAlleleWithFirstUpstreamBaseRemoved(), "-");
   }
 
+  private String getValueBasedOnMutationType(String insertionOption, String deletionOption){
+    String out = NACodes.CORRUPTED_DATA.toString();
+    if (mutationType == MutationTypes.INSERTION_LTE_200BP){
+      out = insertionOption;
+    } else if (mutationType == MutationTypes.DELETION_LTE_200BP){
+      out = deletionOption;
+    }
+    return out;
+  }
 }
