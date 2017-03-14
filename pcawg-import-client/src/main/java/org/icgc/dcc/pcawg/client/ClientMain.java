@@ -69,6 +69,7 @@ public class ClientMain implements CommandLineRunner {
         val vcf = new VCFFileReader(file, REQUIRE_INDEX_CFG);
         for (val variant : vcf){
           SSMPrimary ssmPrimary = null;
+          //TODO: clean up this hardcoding. Create VCF class that does this conversion and processing, and ecapsulated this logic
             if (dataType.toLowerCase().contains("indel")){
               ssmPrimary = newIndelSSMPrimary(
                           variant,
