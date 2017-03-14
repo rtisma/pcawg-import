@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.SSMPrimaryPojo;
-import org.icgc.dcc.pcawg.client.vcf.MutationTypes;
 import org.junit.Test;
 
 import java.io.File;
@@ -27,6 +26,11 @@ public class SSMTest {
   private static final String INDEL_DELETION_VCF_FILENAME = "fixtures/test_indel_deletion.vcf";
   private static final String SNV_MNV_SINGLE_BASE_VCF_FILENAME = "fixtures/test_snv_mnv_single_base.vcf";
   private static final String SNV_MNV_MULTIPLE_BASE_VCF_FILENAME = "fixtures/test_snv_mnv_multiple_base.vcf";
+
+  private static final String INSERTION_MUTATION_TYPE = "insertion of <=200bp";
+  private static final String DELETION_MUTATION_TYPE= "deletion of <=200bp";
+  private static final String SINGLE_BASE_SUBSTITUTION_MUTATION_TYPE= "single base substitution";
+  private static final String MULTIPLE_BASE_SUBSTITUTION_MUTATION_TYPE = "multiple base substitution (>=2bp and <=200bp)";
 
   private static SSMPrimary getFirstSSMIndelPrimary(String vcfFilename){
     val vcf = readVCF(vcfFilename);
@@ -86,7 +90,7 @@ public class SSMTest {
     return SSMPrimaryPojo.builder()
         .analysisId(DUMMY_ANALYSIS_ID)
         .analyzedSampleId(DUMMY_ANALYZED_SAMPLE_ID)
-        .mutationType(MutationTypes.DELETION_LTE_200BP.toString())
+        .mutationType(DELETION_MUTATION_TYPE)
         .chromosome(chromosome)
         .chromosomeStart(pos+1)
         .chromosomeEnd(pos+refLength-1)
@@ -120,7 +124,7 @@ public class SSMTest {
     return SSMPrimaryPojo.builder()
         .analysisId(DUMMY_ANALYSIS_ID)
         .analyzedSampleId(DUMMY_ANALYZED_SAMPLE_ID)
-        .mutationType(MutationTypes.INSERTION_LTE_200BP.toString())
+        .mutationType(INSERTION_MUTATION_TYPE)
         .chromosome(chromosome)
         .chromosomeStart(pos+1)
         .chromosomeEnd(pos+1)
@@ -149,7 +153,7 @@ public class SSMTest {
     return SSMPrimaryPojo.builder()
         .analysisId(DUMMY_ANALYSIS_ID)
         .analyzedSampleId(DUMMY_ANALYZED_SAMPLE_ID)
-        .mutationType(MutationTypes.SINGLE_BASE_SUBSTITUTION.toString())
+        .mutationType(SINGLE_BASE_SUBSTITUTION_MUTATION_TYPE)
         .chromosome(chromosome)
         .chromosomeStart(pos)
         .chromosomeEnd(pos+refLength-1)
@@ -178,7 +182,7 @@ public class SSMTest {
     return SSMPrimaryPojo.builder()
         .analysisId(DUMMY_ANALYSIS_ID)
         .analyzedSampleId(DUMMY_ANALYZED_SAMPLE_ID)
-        .mutationType(MutationTypes.MULTIPLE_BASE_SUBSTITUTION.toString())
+        .mutationType(MULTIPLE_BASE_SUBSTITUTION_MUTATION_TYPE)
         .chromosome(chromosome)
         .chromosomeStart(pos)
         .chromosomeEnd(pos+refLength-1)
