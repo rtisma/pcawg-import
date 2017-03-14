@@ -347,6 +347,9 @@ public class SSMTest {
         sampleMetadata.getAliquotId());
   }
 
+  /**
+   * TODO: [DCC-5507] once DCC-5507 is complete, need to implement this properly, fix this test and unIgnore it
+   */
   @Test
   @Ignore("getRawDataAccession() not properly implemented yet")
   public void testNonUsSSMMetadata() {
