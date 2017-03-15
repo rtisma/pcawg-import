@@ -41,17 +41,23 @@ import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
 public class Factory {
 
   public static Storage newStorage() {
+    log.info("Creating storage instance with persistMode: {}, outputDir: {}, and md5BypassEnable: {}",
+        STORAGE_PERSIST_MODE, STORAGE_OUTPUT_VCF_STORAGE_DIR, STORAGE_BYPASS_MD5_CHECK);
     return new Storage(STORAGE_PERSIST_MODE, STORAGE_OUTPUT_VCF_STORAGE_DIR, STORAGE_BYPASS_MD5_CHECK);
   }
 
   public static PortalNew newPortal(WorkflowTypes callerType){
+    log.info("Creating new Portal instance for callerType [{}]", callerType.name());
     return PortalNew.builder()
         .jsonQueryGenerator(newPcawgVcfPortalAPIQueryCreator(callerType))
         .build();
   }
 
   public static MetadataContainer newMetadataContainer(){
-    return new MetadataContainer(newPortal(CONSENSUS), newSampleMetadataDAO());
+    val portal = newPortal(CONSENSUS);
+    val sampleMetadataDAO = newSampleMetadataDAO();
+    log.info("Creating MetadataContainer");
+    return new MetadataContainer(portal, sampleMetadataDAO);
   }
 
   private static PortalFileDownloader newPortalFileDownloaderFromCallerType(WorkflowTypes callerType){
@@ -73,19 +79,30 @@ public class Factory {
   }
 
   public static Transformer<SSMMetadata> newSSMMetadataTransformer(String dccProjectCode){
+    log.info("Creating SSMMetadata Transformer for DccProjectCode [{}]", dccProjectCode);
     return new Transformer<SSMMetadata>(OUTPUT_TSV_DIRECTORY,dccProjectCode, SSM_M_TSV_FILENAME, new SSMMetadataTSVConverter());
   }
 
   public static Transformer<SSMPrimary> newSSMPrimaryTransformer(String dccProjectCode){
+    log.info("Creating SSMPrimary Transformer for DccProjectCode [{}]", dccProjectCode);
     return new Transformer<SSMPrimary>(OUTPUT_TSV_DIRECTORY,dccProjectCode, SSM_P_TSV_FILENAME, new SSMPrimaryTSVConverter());
   }
 
   private static FileSampleMetadataDAO newFileSampleMetadataDAOAndDownload(){
     val outputDir = Paths.get("").toAbsolutePath().toString();
-    log.info("Downloading [{}] to directory [{}] from url: {}", SAMPLE_SHEET_TSV_FILENAME, outputDir,SAMPLE_SHEET_TSV_URL);
-    val sampleSheetFile = downloadFileByURL(SAMPLE_SHEET_TSV_URL, SAMPLE_SHEET_TSV_FILENAME);
-    log.info("Downloading [{}] to directory [{}] from url: {}", UUID2BARCODE_SHEET_TSV_FILENAME, outputDir, UUID2BARCODE_SHEET_TSV_URL);
-    val uuid2BarcodeSheetFile = downloadFileByURL(UUID2BARCODE_SHEET_TSV_URL, UUID2BARCODE_SHEET_TSV_FILENAME);
+    if (Paths.get(SAMPLE_SHEET_TSV_FILENAME).toFile().exists()){
+      log.info("Already downloaded [{}] to directory [{}] from url: {}", SAMPLE_SHEET_TSV_FILENAME, outputDir,SAMPLE_SHEET_TSV_URL);
+    } else {
+      log.info("Downloading [{}] to directory [{}] from url: {}", SAMPLE_SHEET_TSV_FILENAME, outputDir,SAMPLE_SHEET_TSV_URL);
+      downloadFileByURL(SAMPLE_SHEET_TSV_URL, SAMPLE_SHEET_TSV_FILENAME);
+    }
+
+    if (Paths.get(UUID2BARCODE_SHEET_TSV_FILENAME).toFile().exists()){
+      log.info("Already downloaded [{}] to directory [{}] from url: {}", UUID2BARCODE_SHEET_TSV_FILENAME, outputDir, UUID2BARCODE_SHEET_TSV_URL);
+    } else {
+      log.info("Downloading [{}] to directory [{}] from url: {}", UUID2BARCODE_SHEET_TSV_FILENAME, outputDir, UUID2BARCODE_SHEET_TSV_URL);
+      downloadFileByURL(UUID2BARCODE_SHEET_TSV_URL, UUID2BARCODE_SHEET_TSV_FILENAME);
+    }
     log.info("Done downloading, creating FileSampleMetadataDAO");
     return newFileSampleMetadataDAO(SAMPLE_SHEET_TSV_FILENAME, UUID2BARCODE_SHEET_TSV_FILENAME);
   }

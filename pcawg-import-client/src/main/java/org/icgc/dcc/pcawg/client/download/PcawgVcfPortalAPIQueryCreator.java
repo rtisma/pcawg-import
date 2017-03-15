@@ -19,6 +19,7 @@ import static org.icgc.dcc.pcawg.client.utils.Strings.toStringArray;
 public class PcawgVcfPortalAPIQueryCreator implements ObjectNodeConverter {
 
   public static final PcawgVcfPortalAPIQueryCreator newPcawgVcfPortalAPIQueryCreator(WorkflowTypes callerType){
+    log.info("Creating PcawgVcfPortalAPIQueryCreator instance for callertype [{}]", callerType.name());
     return new PcawgVcfPortalAPIQueryCreator(callerType);
   }
 

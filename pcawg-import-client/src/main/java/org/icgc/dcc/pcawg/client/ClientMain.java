@@ -52,9 +52,12 @@ public class ClientMain implements CommandLineRunner {
 
     val metadataContainer = newMetadataContainer();
     val storage = newStorage();
-    val total = metadataContainer.getTotalMetadataContexts();
-    int count = 0;
+    val totalMetadataContexts = metadataContainer.getTotalMetadataContexts();
+    int countMetadataContexts = 0;
+    val totalDccProjectCodes = metadataContainer.getDccProjectCodes().size();
+    int countDccProjectCodes  = 0;
     for (val dccProjectCode : metadataContainer.getDccProjectCodes()){
+      log.info("Processing DccProjectCode ( {} / {} ): {}", ++countDccProjectCodes, totalDccProjectCodes, dccProjectCode);
       val ssmPrimaryTransformer = newSSMPrimaryTransformer(dccProjectCode);
       val ssmMetadataTransformer = newSSMMetadataTransformer(dccProjectCode);
       for (val metadataContext : metadataContainer.getMetadataContextsForDccProjectCode(dccProjectCode)){
@@ -62,8 +65,7 @@ public class ClientMain implements CommandLineRunner {
         val fileMetaData = metadataContext.getFileMetaData();
         val file = storage.downloadFile(fileMetaData);
         val dataType = sampleMetadata.getDataType();
-        log.info("Loading File ( {} / {} ): {}", ++count, total, fileMetaData.getVcfFilenameParser().getFilename());
-
+        log.info("Loading File ( {} / {} ): {}", ++countMetadataContexts, totalMetadataContexts, fileMetaData.getVcfFilenameParser().getFilename());
         val ssmMetadata = newSSMMetadata(sampleMetadata);
         ssmMetadataTransformer.transform(ssmMetadata);
         val vcf = new VCFFileReader(file, REQUIRE_INDEX_CFG);
