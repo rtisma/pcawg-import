@@ -52,6 +52,8 @@ public class ClientMain implements CommandLineRunner {
 
     val metadataContainer = newMetadataContainer();
     val storage = newStorage();
+    val total = metadataContainer.getTotalMetadataContexts();
+    int count = 0;
     for (val dccProjectCode : metadataContainer.getDccProjectCodes()){
       val ssmPrimaryTransformer = newSSMPrimaryTransformer(dccProjectCode);
       val ssmMetadataTransformer = newSSMMetadataTransformer(dccProjectCode);
@@ -60,9 +62,7 @@ public class ClientMain implements CommandLineRunner {
         val fileMetaData = metadataContext.getFileMetaData();
         val file = storage.downloadFile(fileMetaData);
         val dataType = sampleMetadata.getDataType();
-        log.info("File: {}", file.getAbsoluteFile().toString());
-        log.info("ProjectCode: {}", sampleMetadata);
-        log.info("FileMetaData: {}", fileMetaData);
+        log.info("Loading File ( {} / {} ): {}", ++count, total, fileMetaData.getVcfFilenameParser().getFilename());
 
         val ssmMetadata = newSSMMetadata(sampleMetadata);
         ssmMetadataTransformer.transform(ssmMetadata);

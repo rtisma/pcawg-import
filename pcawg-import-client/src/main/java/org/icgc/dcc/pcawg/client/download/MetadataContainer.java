@@ -41,6 +41,10 @@ public class MetadataContainer {
     dccProjectCodeMap = groupByDccProjectCode(metadataContextList);
   }
 
+  public int getTotalMetadataContexts(){
+    return getMetadataContexts().size();
+  }
+
   //Lazy loading
   public List<MetadataContext> getMetadataContexts(){
     return metadataContextList;
