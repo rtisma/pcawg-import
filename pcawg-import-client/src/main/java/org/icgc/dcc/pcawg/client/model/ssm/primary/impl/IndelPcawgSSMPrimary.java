@@ -65,18 +65,18 @@ public class IndelPcawgSSMPrimary extends AbstractPcawgSSMPrimaryBase {
 
   @Override
   public String getReferenceGenomeAllele() {
-    return getValueBasedOnMutationType("-", getReferenceAlleleWithFirstUpstreamBaseRemoved());
+    return getValueBasedOnMutationType("-", getReferenceAlleleSubstring());
   }
 
   @Override
   public String getControlGenotype() {
-    val allele = getReferenceAlleleWithFirstUpstreamBaseRemoved();
+    val allele = getReferenceAlleleSubstring();
     return getValueBasedOnMutationType(
         joinAlleles("-","-"),
         joinAlleles(allele, allele));
   }
 
-  private String getReferenceAlleleWithFirstUpstreamBaseRemoved(){
+  private String getReferenceAlleleSubstring(){
     return getReferenceAlleleString().substring(1);
   }
 
@@ -84,25 +84,25 @@ public class IndelPcawgSSMPrimary extends AbstractPcawgSSMPrimaryBase {
    * TODO: Assumption is there there is ONLY ONE alternative allele.
    * @throws IllegalStateException for when there is more than one alternative allele
    */
-  private String getAlternativeAlleleWithFirstUpstreamBaseRemoved(){
+  private String getAlternativeAlleleSubstring(){
     return getAlternativeAlleleString().substring(1);
   }
 
   @Override
   public String getMutatedFromAllele() {
-    return getValueBasedOnMutationType("-", getReferenceAlleleWithFirstUpstreamBaseRemoved());
+    return getValueBasedOnMutationType("-", getReferenceAlleleSubstring());
   }
 
   @Override
   public String getTumorGenotype() {
     return getValueBasedOnMutationType(
-        joinAlleles("-",getAlternativeAlleleWithFirstUpstreamBaseRemoved()),
-        joinAlleles(getReferenceAlleleWithFirstUpstreamBaseRemoved(),"-" ));
+        joinAlleles("-", getAlternativeAlleleSubstring()),
+        joinAlleles(getReferenceAlleleSubstring(),"-" ));
   }
 
   @Override
   public String getMutatedToAllele() {
-    return getValueBasedOnMutationType(getAlternativeAlleleWithFirstUpstreamBaseRemoved(), "-");
+    return getValueBasedOnMutationType(getAlternativeAlleleSubstring(), "-");
   }
 
   private String getValueBasedOnMutationType(String insertionOption, String deletionOption){

@@ -31,8 +31,7 @@ import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_PERSIST_
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.UUID2BARCODE_SHEET_TSV_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.UUID2BARCODE_SHEET_TSV_URL;
 import static org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO.newFileSampleMetadataDAO;
-import static org.icgc.dcc.pcawg.client.download.PcawgVcfPortalAPIQueryCreator.newPcawgVcfPortalAPIQueryCreator;
-import static org.icgc.dcc.pcawg.client.download.PortalFileDownloader.newPortalFileDownloader;
+import static org.icgc.dcc.pcawg.client.download.PortalQueryCreator.newPcawgQueryCreator;
 import static org.icgc.dcc.pcawg.client.download.Storage.downloadFileByURL;
 import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
 
@@ -49,7 +48,7 @@ public class Factory {
   public static Portal newPortal(WorkflowTypes callerType){
     log.info("Creating new Portal instance for callerType [{}]", callerType.name());
     return Portal.builder()
-        .jsonQueryGenerator(newPcawgVcfPortalAPIQueryCreator(callerType))
+        .jsonQueryGenerator(newPcawgQueryCreator(callerType))
         .build();
   }
 
@@ -60,12 +59,12 @@ public class Factory {
     return new MetadataContainer(portal, sampleMetadataDAO);
   }
 
-  private static PortalFileDownloader newPortalFileDownloaderFromCallerType(WorkflowTypes callerType){
-    return newPortalFileDownloader(newPortal(callerType), newStorage());
+  private static PortalFileDownloader newPortalFileDownloader(WorkflowTypes callerType){
+    return PortalFileDownloader.newPortalFileDownloader(newPortal(callerType), newStorage());
   }
 
   public static PortalFileDownloader newConsensusPortalFileDownloader(){
-    return newPortalFileDownloaderFromCallerType(CONSENSUS);
+    return newPortalFileDownloader(CONSENSUS);
   }
 
   public static SSMMetadata newSSMMetadata(SampleMetadata sampleMetadata){

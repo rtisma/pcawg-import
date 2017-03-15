@@ -16,11 +16,11 @@ import static org.icgc.dcc.pcawg.client.utils.Strings.toStringArray;
 @RequiredArgsConstructor(access = PRIVATE)
 @Value
 @Slf4j
-public class PcawgVcfPortalAPIQueryCreator implements ObjectNodeConverter {
+public class PortalQueryCreator implements ObjectNodeConverter {
 
-  public static final PcawgVcfPortalAPIQueryCreator newPcawgVcfPortalAPIQueryCreator(WorkflowTypes callerType){
-    log.info("Creating PcawgVcfPortalAPIQueryCreator instance for callertype [{}]", callerType.name());
-    return new PcawgVcfPortalAPIQueryCreator(callerType);
+  public static final PortalQueryCreator newPcawgQueryCreator(WorkflowTypes callerType){
+    log.info("Creating PortalQueryCreator instance for callertype [{}]", callerType.name());
+    return new PortalQueryCreator(callerType);
   }
 
   @NonNull
