@@ -3,7 +3,7 @@ package org.icgc.dcc.pcawg.client.model.ssm.metadata.impl;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.icgc.dcc.pcawg.client.model.ssm.NACodes;
+import org.icgc.dcc.pcawg.client.model.NACodes;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 
 import static lombok.AccessLevel.PRIVATE;

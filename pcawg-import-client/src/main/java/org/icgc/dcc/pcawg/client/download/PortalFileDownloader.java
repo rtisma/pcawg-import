@@ -22,8 +22,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.model.metadata.FileContext;
-import org.icgc.dcc.pcawg.client.model.metadata.file.FileMetaData;
+import org.icgc.dcc.pcawg.client.model.metadata.PortalFileContext;
+import org.icgc.dcc.pcawg.client.model.metadata.file.PortalMetadata;
 
 import java.util.Iterator;
 import java.util.List;
@@ -34,25 +34,25 @@ import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 
 @RequiredArgsConstructor(access =  PRIVATE)
 @Value
-public class PortalFileDownloader implements Iterable<FileContext> {
+public class PortalFileDownloader implements Iterable<PortalFileContext> {
 
-  public static final PortalFileDownloader newPortalFileDownloader(final PortalNew portal, final Storage storage){
+  public static final PortalFileDownloader newPortalFileDownloader(final Portal portal, final Storage storage){
     return new PortalFileDownloader(portal, storage);
   }
 
   @NonNull
-  private final PortalNew portal;
+  private final Portal portal;
 
   @NonNull
   private final Storage storage;
 
   @NonFinal
-  private List<FileMetaData> fileMetaDatas = null;
+  private List<PortalMetadata> portalMetadatas = null;
 
   @Override
-  public Iterator<FileContext> iterator() {
-    val iterator = getFileMetaDatas().iterator();
-    return new Iterator<FileContext>(){
+  public Iterator<PortalFileContext> iterator() {
+    val iterator = getPortalMetadatas().iterator();
+    return new Iterator<PortalFileContext>(){
 
       @Override
       public boolean hasNext() {
@@ -60,32 +60,32 @@ public class PortalFileDownloader implements Iterable<FileContext> {
       }
 
       @Override
-      public FileContext next() {
-        return createFileContext(iterator.next());
+      public PortalFileContext next() {
+        return createPortalFileContext(iterator.next());
       }
     };
   }
 
-  public Stream<FileContext> stream() {
-    return getFileMetaDatas().stream()
-        .map(this::createFileContext);
+  public Stream<PortalFileContext> stream() {
+    return getPortalMetadatas().stream()
+        .map(this::createPortalFileContext);
   }
 
   //Lazy loading
-  private List<FileMetaData> getFileMetaDatas(){
-    if (fileMetaDatas == null){
+  private List<PortalMetadata> getPortalMetadatas(){
+    if (portalMetadatas == null){
       val fileMetas = portal.getFileMetas();
-      this.fileMetaDatas = fileMetas.stream()
-          .map(FileMetaData::buildFileMetaData)
+      this.portalMetadatas = fileMetas.stream()
+          .map(PortalMetadata::buildPortalMetadata)
           .collect(toImmutableList());
     }
-    return fileMetaDatas;
+    return portalMetadatas;
   }
 
-  private  FileContext createFileContext(FileMetaData fileMetaData){
-    return FileContext.builder()
-        .file(storage.downloadFile(fileMetaData))
-        .fileMetaData(fileMetaData)
+  private PortalFileContext createPortalFileContext(PortalMetadata portalMetadata){
+    return PortalFileContext.builder()
+        .file(storage.downloadFile(portalMetadata))
+        .portalMetadata(portalMetadata)
         .build();
   }
 

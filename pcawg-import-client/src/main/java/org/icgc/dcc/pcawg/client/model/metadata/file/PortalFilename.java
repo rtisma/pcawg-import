@@ -32,11 +32,10 @@ import static org.icgc.dcc.common.core.util.Joiners.DOT;
 /**
  * Takes a filename, and extracts particular fields characteristic of ICGC VCF files
  */
-public class FilenameParser
-    implements Serializable, Comparable<FilenameParser> {
+public class PortalFilename implements Serializable, Comparable<PortalFilename> {
 
-  public static final FilenameParser newFilenameParser(String filename){
-    return new FilenameParser(filename);
+  public static final PortalFilename newPortalFilename(String filename){
+    return new PortalFilename(filename);
   }
 
   private static final long serialVersionUID = 1484172857L;
@@ -53,7 +52,7 @@ public class FilenameParser
   private final String[] elements;
   private WorkflowTypes workflowType = null;
 
-  public FilenameParser(@NonNull final String filename) {
+  public PortalFilename(@NonNull final String filename) {
     checkArgument(!filename.isEmpty(), "The filename [%s] is empty", filename);
     elements = Iterables.toArray(Splitters.DOT
         .trimResults()
@@ -121,7 +120,7 @@ public class FilenameParser
   }
 
   @Override
-  public int compareTo(FilenameParser o) {
+  public int compareTo(PortalFilename o) {
     return this.getFilename().compareTo(o.getFilename());
   }
 }

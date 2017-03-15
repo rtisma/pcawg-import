@@ -13,7 +13,7 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.stream.Collectors.groupingBy;
-import static org.icgc.dcc.pcawg.client.model.metadata.file.FileMetaData.buildFileMetaData;
+import static org.icgc.dcc.pcawg.client.model.metadata.file.PortalMetadata.buildPortalMetadata;
 
 @Getter
 public class MetadataContainer {
@@ -22,19 +22,19 @@ public class MetadataContainer {
 
   private Map<String, List<MetadataContext>> dccProjectCodeMap;
 
-  public MetadataContainer(@NonNull PortalNew portal, @NonNull SampleMetadataDAO sampleMetadataDAO){
+  public MetadataContainer(@NonNull Portal portal, @NonNull SampleMetadataDAO sampleMetadataDAO){
     init(portal, sampleMetadataDAO);
   }
 
-  private void init(PortalNew portal, SampleMetadataDAO sampleMetadataDAO){
+  private void init(Portal portal, SampleMetadataDAO sampleMetadataDAO){
     val builder = ImmutableList.<MetadataContext>builder();
     for (val fileMeta : portal.getFileMetas()){
-      val fileMetaData = buildFileMetaData(fileMeta);
-      val filenameParser = fileMetaData.getVcfFilenameParser();
-      val sampleMetadata = sampleMetadataDAO.getSampleMetadataByFilenameParser(filenameParser);
+      val portalMetadata = buildPortalMetadata(fileMeta);
+      val filenameParser = portalMetadata.getPortalFilename();
+      val sampleMetadata = sampleMetadataDAO.fetchSampleMetadata(filenameParser);
       builder.add(MetadataContext.builder()
           .sampleMetadata(sampleMetadata)
-          .fileMetaData(fileMetaData)
+          .portalMetadata(portalMetadata)
           .build());
     }
     metadataContextList = builder.build();

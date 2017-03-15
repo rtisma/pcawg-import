@@ -4,8 +4,8 @@ import lombok.val;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.icgc.dcc.pcawg.client.Factory.newSampleMetadataDAO;
-import static org.icgc.dcc.pcawg.client.model.metadata.file.FilenameParser.newFilenameParser;
+import static org.icgc.dcc.pcawg.client.core.Factory.newSampleMetadataDAO;
+import static org.icgc.dcc.pcawg.client.model.metadata.file.PortalFilename.newPortalFilename;
 import static org.icgc.dcc.pcawg.client.model.metadata.project.SampleSheetModel.newSampleSheetModelFromTSVLine;
 import static org.icgc.dcc.pcawg.client.model.metadata.project.Uuid2BarcodeSheetModel.newUuid2BarcodeSheetModelFromTSVLine;
 
@@ -33,21 +33,21 @@ public class SampleMetadataDAOTest {
   }
 
   @Test
-  public void testGetSampleMetadataByFilenameParser(){
+  public void testFetchSampleMetadata(){
     val sampleMetadataDAO = newSampleMetadataDAO();
     val nonUsFilename = "10cb8ac6-c622-11e3-bf01-24c6515278c0.dkfz-copyNumberEstimation_1-0-189-hpc-fix.1508271624.somatic.cnv.vcf.gz";
     val usFilename = "9c70688d-6e43-4520-9262-eaae4e4d597d.broad-snowman.20150827.somatic.sv.vcf.gz";
-    val nonUsId = newFilenameParser(nonUsFilename);
-    val usId = newFilenameParser(usFilename);
+    val nonUsId = newPortalFilename(nonUsFilename);
+    val usId = newPortalFilename(usFilename);
 
     //Non-US
-    val nonUsProjectData = sampleMetadataDAO.getSampleMetadataByFilenameParser(nonUsId);
+    val nonUsProjectData = sampleMetadataDAO.fetchSampleMetadata(nonUsId);
     assertThat(nonUsProjectData.getDccProjectCode()).isEqualTo("LIRI-JP");
     assertThat(nonUsProjectData.getAnalyzedSampleId()).isEqualTo("RK001_C01");
     assertThat(nonUsProjectData.getMatchedSampleId()).isEqualTo("RK001_B01");
 
     //US
-    val usProjectData = sampleMetadataDAO.getSampleMetadataByFilenameParser(usId);
+    val usProjectData = sampleMetadataDAO.fetchSampleMetadata(usId);
     assertThat(usProjectData.getDccProjectCode()).isEqualTo("BRCA-US");
     assertThat(usProjectData.getAnalyzedSampleId()).isEqualTo("TCGA-BH-A18R-01A-11D-A19H-09");
     assertThat(usProjectData.getMatchedSampleId()).isEqualTo("TCGA-BH-A18R-11A-42D-A19H-09");

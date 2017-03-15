@@ -3,7 +3,7 @@ package org.icgc.dcc.pcawg.client.model.ssm.primary.impl;
 import htsjdk.variant.variantcontext.VariantContext;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.model.ssm.NACodes;
+import org.icgc.dcc.pcawg.client.model.NACodes;
 import org.icgc.dcc.pcawg.client.vcf.MutationTypes;
 
 @Slf4j

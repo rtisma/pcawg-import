@@ -1,6 +1,6 @@
 package org.icgc.dcc.pcawg.client.data;
 
-import org.icgc.dcc.pcawg.client.model.metadata.file.FilenameParser;
+import org.icgc.dcc.pcawg.client.model.metadata.file.PortalFilename;
 import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
 
 public interface SampleMetadataDAO {
@@ -9,5 +9,5 @@ public interface SampleMetadataDAO {
     return projectCode.matches("^.*-US$");
   }
 
-  SampleMetadata getSampleMetadataByFilenameParser(FilenameParser filenameParser);
+  SampleMetadata fetchSampleMetadata(PortalFilename portalFilename);
 }

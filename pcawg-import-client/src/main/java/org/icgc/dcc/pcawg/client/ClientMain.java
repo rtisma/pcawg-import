@@ -29,11 +29,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.util.Arrays;
 
-import static org.icgc.dcc.pcawg.client.Factory.newMetadataContainer;
-import static org.icgc.dcc.pcawg.client.Factory.newSSMMetadata;
-import static org.icgc.dcc.pcawg.client.Factory.newSSMMetadataTransformer;
-import static org.icgc.dcc.pcawg.client.Factory.newSSMPrimaryTransformer;
-import static org.icgc.dcc.pcawg.client.Factory.newStorage;
+import static org.icgc.dcc.pcawg.client.core.Factory.newMetadataContainer;
+import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadata;
+import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadataTransformer;
+import static org.icgc.dcc.pcawg.client.core.Factory.newSSMPrimaryTransformer;
+import static org.icgc.dcc.pcawg.client.core.Factory.newStorage;
 import static org.icgc.dcc.pcawg.client.model.ssm.primary.impl.IndelPcawgSSMPrimary.newIndelSSMPrimary;
 
 @Slf4j
@@ -62,10 +62,10 @@ public class ClientMain implements CommandLineRunner {
       val ssmMetadataTransformer = newSSMMetadataTransformer(dccProjectCode);
       for (val metadataContext : metadataContainer.getMetadataContextsForDccProjectCode(dccProjectCode)){
         val sampleMetadata = metadataContext.getSampleMetadata();
-        val fileMetaData = metadataContext.getFileMetaData();
-        val file = storage.downloadFile(fileMetaData);
+        val portalMetadata = metadataContext.getPortalMetadata();
+        val file = storage.downloadFile(portalMetadata);
         val dataType = sampleMetadata.getDataType();
-        log.info("Loading File ( {} / {} ): {}", ++countMetadataContexts, totalMetadataContexts, fileMetaData.getVcfFilenameParser().getFilename());
+        log.info("Loading File ( {} / {} ): {}", ++countMetadataContexts, totalMetadataContexts, portalMetadata.getPortalFilename().getFilename());
         val ssmMetadata = newSSMMetadata(sampleMetadata);
         ssmMetadataTransformer.transform(ssmMetadata);
         val vcf = new VCFFileReader(file, REQUIRE_INDEX_CFG);

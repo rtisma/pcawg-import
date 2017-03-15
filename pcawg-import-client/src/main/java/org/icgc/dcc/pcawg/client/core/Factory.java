@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client;
+package org.icgc.dcc.pcawg.client.core;
 
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,7 +7,7 @@ import org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO;
 import org.icgc.dcc.pcawg.client.data.SampleMetadataDAO;
 import org.icgc.dcc.pcawg.client.download.MetadataContainer;
 import org.icgc.dcc.pcawg.client.download.PortalFileDownloader;
-import org.icgc.dcc.pcawg.client.download.PortalNew;
+import org.icgc.dcc.pcawg.client.download.Portal;
 import org.icgc.dcc.pcawg.client.download.Storage;
 import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
@@ -46,9 +46,9 @@ public class Factory {
     return new Storage(STORAGE_PERSIST_MODE, STORAGE_OUTPUT_VCF_STORAGE_DIR, STORAGE_BYPASS_MD5_CHECK);
   }
 
-  public static PortalNew newPortal(WorkflowTypes callerType){
+  public static Portal newPortal(WorkflowTypes callerType){
     log.info("Creating new Portal instance for callerType [{}]", callerType.name());
-    return PortalNew.builder()
+    return Portal.builder()
         .jsonQueryGenerator(newPcawgVcfPortalAPIQueryCreator(callerType))
         .build();
   }

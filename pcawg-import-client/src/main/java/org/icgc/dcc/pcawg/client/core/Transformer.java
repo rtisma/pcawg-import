@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client;
+package org.icgc.dcc.pcawg.client.core;
 
 import lombok.NonNull;
 import lombok.SneakyThrows;

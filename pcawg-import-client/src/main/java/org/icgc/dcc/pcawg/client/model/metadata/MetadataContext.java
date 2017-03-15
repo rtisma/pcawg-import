@@ -3,7 +3,7 @@ package org.icgc.dcc.pcawg.client.model.metadata;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.icgc.dcc.pcawg.client.model.metadata.file.FileMetaData;
+import org.icgc.dcc.pcawg.client.model.metadata.file.PortalMetadata;
 import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
 
 @Builder
@@ -11,7 +11,7 @@ import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
 public class MetadataContext {
 
   @NonNull
-  private final FileMetaData fileMetaData;
+  private final PortalMetadata portalMetadata;
 
   @NonNull
   private final SampleMetadata sampleMetadata;

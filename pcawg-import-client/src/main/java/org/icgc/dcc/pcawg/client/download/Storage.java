@@ -25,7 +25,7 @@ import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.model.metadata.file.FileMetaData;
+import org.icgc.dcc.pcawg.client.model.metadata.file.PortalMetadata;
 
 import java.io.File;
 import java.io.IOException;
@@ -120,10 +120,10 @@ public class Storage {
   }
 
   @SneakyThrows
-  public File downloadFile(@NonNull final FileMetaData fileMetaData) {
-    val objectId = fileMetaData.getObjectId();
-    val expectedMD5Sum = fileMetaData.getFileMd5sum();
-    val relativeFilename = fileMetaData.getVcfFilenameParser().getFilename();
+  public File downloadFile(@NonNull final PortalMetadata portalMetadata) {
+    val objectId = portalMetadata.getObjectId();
+    val expectedMD5Sum = portalMetadata.getFileMd5sum();
+    val relativeFilename = portalMetadata.getPortalFilename().getFilename();
     val relativeFile = Paths.get(relativeFilename);
     val absFile = outputDir.resolve(relativeFile).toAbsolutePath();
     val absFilename = absFile.toString();

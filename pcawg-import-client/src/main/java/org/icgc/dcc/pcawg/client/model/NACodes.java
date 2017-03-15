@@ -1,4 +1,4 @@
-package org.icgc.dcc.pcawg.client.model.ssm;
+package org.icgc.dcc.pcawg.client.model;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

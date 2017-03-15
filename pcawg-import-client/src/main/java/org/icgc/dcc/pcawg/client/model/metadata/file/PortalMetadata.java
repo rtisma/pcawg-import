@@ -23,9 +23,6 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.download.PortalFiles;
-import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
-import org.icgc.dcc.pcawg.client.vcf.MutationTypes;
-import org.icgc.dcc.pcawg.client.vcf.DataTypes;
 
 import java.io.Serializable;
 import java.util.Comparator;
@@ -33,7 +30,7 @@ import java.util.Comparator;
 //TODO: [rtisma] -- consider storing the WorkflowTypes, MutationTypes and MutationSubTypes enum values instead of string representation. Or atleast keep strings, just create functions to compare the string against the enum
 @Slf4j
 @Data
-public final class FileMetaData implements Serializable {
+public final class PortalMetadata implements Serializable {
 
   private static final long serialVersionUID = 1484172786L;
 
@@ -64,24 +61,9 @@ public final class FileMetaData implements Serializable {
   private final String fileMd5sum;
 
   @NonNull
-  private final FilenameParser vcfFilenameParser;
+  private final PortalFilename portalFilename;
 
-//  @NonNull
-//  private final String dccProjectCode;
-//
-//  @NonNull
-//  private final String analyzedSampleId;
-//
-//  @NonNull
-//  private final String matchedSampleId;
-//
-//  public String getAnalysisId(){
-//    val workflow = vcfFilenameParser.getWorkflow();
-//    val dataType = vcfFilenameParser.getDataType();
-//    return UNDERSCORE.join(dccProjectCode, workflow, dataType );
-//  }
-
-  public static FileMetaData buildFileMetaData(@NonNull final ObjectNode objectNode){
+  public static PortalMetadata buildPortalMetadata(@NonNull final ObjectNode objectNode){
     val objectId = PortalFiles.getObjectId(objectNode);
     val fileId = PortalFiles.getFileId(objectNode);
     val sampleId = PortalFiles.getSampleId(objectNode);
@@ -89,60 +71,32 @@ public final class FileMetaData implements Serializable {
     val dataType = PortalFiles.getDataType(objectNode);
     val referenceName = PortalFiles.getReferenceName(objectNode);
     val genomeBuild = PortalFiles.getGenomeBuild(objectNode);
-    val vcfFilenameParser = PortalFiles.getParser(objectNode);
+    val portalFilename = PortalFiles.getPortalFilename(objectNode);
     val fileSize = PortalFiles.getFileSize(objectNode);
     val fileMd5sum = PortalFiles.getFileMD5sum(objectNode);
-    return new FileMetaData(objectId, fileId, sampleId, donorId, dataType, referenceName, genomeBuild, fileSize,
+    return new PortalMetadata(objectId, fileId, sampleId, donorId, dataType, referenceName, genomeBuild, fileSize,
         fileMd5sum,
-        vcfFilenameParser);
-  }
-
-  public boolean compare(final MutationTypes type) {
-    return getVcfFilenameParser().getMutationType().equals(type.toString());
-  }
-
-  public boolean compare(final DataTypes type) {
-    return getVcfFilenameParser().getDataType().equals(type.toString());
-  }
-
-  public boolean compare(final WorkflowTypes type) {
-    return getVcfFilenameParser().getWorkflow().equals(type.toString());
-  }
-
-  private static String getStartsWithRegex(final String keyword) {
-    return "^" + keyword + ".*";
-  }
-
-  public boolean startsWith(final MutationTypes type) {
-    return getVcfFilenameParser().getMutationType().matches(getStartsWithRegex(type.toString()));
-  }
-
-  public boolean startsWith(final DataTypes type) {
-    return getVcfFilenameParser().getDataType().matches(getStartsWithRegex(type.toString()));
-  }
-
-  public boolean startsWith(final WorkflowTypes type) {
-    return getVcfFilenameParser().getWorkflow().matches(getStartsWithRegex(type.toString()));
+        portalFilename);
   }
 
   public double getFileSizeMb() {
     return (double) getFileSize() / (1024 * 1024);
   }
 
-  public static class FileSizeComparator implements Comparator<FileMetaData> {
+  public static class FileSizeComparator implements Comparator<PortalMetadata> {
 
     @Override
-    public int compare(FileMetaData f1, FileMetaData f2) {
+    public int compare(PortalMetadata f1, PortalMetadata f2) {
         return Long.compare(f1.getFileSize(), f2.getFileSize());
     }
 
   }
 
-  public static class FilenameComparator implements Comparator<FileMetaData> {
+  public static class FilenameComparator implements Comparator<PortalMetadata> {
 
     @Override
-    public int compare(FileMetaData f1, FileMetaData f2) {
-      return f1.getVcfFilenameParser().getFilename().compareTo(f2.getVcfFilenameParser().getFilename());
+    public int compare(PortalMetadata f1, PortalMetadata f2) {
+      return f1.getPortalFilename().getFilename().compareTo(f2.getPortalFilename().getFilename());
     }
 
   }

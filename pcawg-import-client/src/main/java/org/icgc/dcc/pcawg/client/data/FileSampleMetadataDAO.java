@@ -6,7 +6,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.model.metadata.file.FilenameParser;
+import org.icgc.dcc.pcawg.client.model.metadata.file.PortalFilename;
 import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
 import org.icgc.dcc.pcawg.client.model.metadata.project.SampleSheetModel;
 import org.icgc.dcc.pcawg.client.model.metadata.project.Uuid2BarcodeSheetModel;
@@ -42,7 +42,7 @@ public class FileSampleMetadataDAO implements SampleMetadataDAO {
     this.uuid2BarcodeSheetList = readUuid2BarcodeSheet();
   }
 
-  private SampleSheetModel getFirstSampleSheetByAliquotId(String aliquotId){
+  private SampleSheetModel getFirstSampleSheet(String aliquotId){
     val aliquotIdStream= sampleSheetList.stream()
         .filter(s -> s.getAliquotId().equals(aliquotId));
 
@@ -70,11 +70,11 @@ public class FileSampleMetadataDAO implements SampleMetadataDAO {
   }
 
   @Override
-  public SampleMetadata getSampleMetadataByFilenameParser(FilenameParser filenameParser){
-    val aliquotId = filenameParser.getAliquotId();
-    val workflow =  filenameParser.getWorkflow();
-    val dataType =  filenameParser.getDataType();
-    val sampleSheetByAliquotId = getFirstSampleSheetByAliquotId(aliquotId);
+  public SampleMetadata fetchSampleMetadata(PortalFilename portalFilename){
+    val aliquotId = portalFilename.getAliquotId();
+    val workflow =  portalFilename.getWorkflow();
+    val dataType =  portalFilename.getDataType();
+    val sampleSheetByAliquotId = getFirstSampleSheet(aliquotId);
     val dccProjectCode = sampleSheetByAliquotId.getDccProjectCode();
     val submitterSampleId = sampleSheetByAliquotId.getSubmitterSampleId();
     val donorUniqueId = sampleSheetByAliquotId.getDonorUniqueId();

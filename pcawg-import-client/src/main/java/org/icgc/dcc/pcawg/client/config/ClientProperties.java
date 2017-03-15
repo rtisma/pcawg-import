@@ -19,16 +19,14 @@ package org.icgc.dcc.pcawg.client.config;
 
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.System.getProperty;
-import static org.icgc.dcc.pcawg.client.core.MiscNames.FALSE;
 
 public class ClientProperties {
+
+  private static final String FALSE = "false";
 
   public static final String STORAGE_API = "https://storage.cancercollaboratory.org";
   public static final String PORTAL_API = "https://dcc.icgc.org";
   public static final String TOKEN = getProperty("token");
-
-  public static final String FETCHER_STORAGE_FILENAME = "allFileMetaDatas.dat";
-  public static final boolean FETCHER_FORCE_NEW_FILE = false;
 
   public static final boolean STORAGE_PERSIST_MODE = parseBoolean(getProperty("persist_mode", FALSE));
   public static final String STORAGE_OUTPUT_VCF_STORAGE_DIR = "storedVCFs";
