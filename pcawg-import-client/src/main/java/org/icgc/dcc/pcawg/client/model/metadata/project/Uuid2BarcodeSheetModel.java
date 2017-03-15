@@ -20,7 +20,7 @@ public class Uuid2BarcodeSheetModel {
   @NonNull
   private final String tcgaBarcode;
 
-  public static Uuid2BarcodeSheetModel newUuid2BarcodeSheetModelFromTSVLine(String tsvLine){
+  public static Uuid2BarcodeSheetModel newUuid2BarcodeSheetModel(String tsvLine){
     val array = tsvLine.trim().split("\t");
     checkArgument(array.length == MAX_NUM_COLUMNS, "Max allowed columns is %s, but input columns is %s", MAX_NUM_COLUMNS, array.length);
     return Uuid2BarcodeSheetModel.builder()

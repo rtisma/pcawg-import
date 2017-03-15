@@ -40,7 +40,7 @@ public class SampleSheetModel {
   @NonNull
   private final String dccProjectCode;
 
-  public static SampleSheetModel newSampleSheetModelFromTSVLine(String tsvLine){
+  public static SampleSheetModel newSampleSheetModel(String tsvLine){
 
     val array = tsvLine.trim().split("\t");
     checkArgument(array.length == MAX_NUM_COLUMNS, "Max allowed columns is %s, but input columns is %s", MAX_NUM_COLUMNS, array.length);

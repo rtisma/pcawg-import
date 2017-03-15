@@ -106,11 +106,11 @@ public class FileSampleMetadataDAO implements SampleMetadataDAO {
   }
 
   private List<SampleSheetModel> readSampleSheet(){
-    return readTsv(sampleSheetFilename, true, SampleSheetModel::newSampleSheetModelFromTSVLine);
+    return readTsv(sampleSheetFilename, true, SampleSheetModel::newSampleSheetModel);
   }
 
   private List<Uuid2BarcodeSheetModel> readUuid2BarcodeSheet(){
-    return readTsv(uuid2BarcodeSheetFilename, true, Uuid2BarcodeSheetModel::newUuid2BarcodeSheetModelFromTSVLine);
+    return readTsv(uuid2BarcodeSheetFilename, true, Uuid2BarcodeSheetModel::newUuid2BarcodeSheetModel);
   }
 
   @SneakyThrows

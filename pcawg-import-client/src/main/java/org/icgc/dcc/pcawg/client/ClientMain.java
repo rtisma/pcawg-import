@@ -60,7 +60,7 @@ public class ClientMain implements CommandLineRunner {
       log.info("Processing DccProjectCode ( {} / {} ): {}", ++countDccProjectCodes, totalDccProjectCodes, dccProjectCode);
       val ssmPrimaryTransformer = newSSMPrimaryTransformer(dccProjectCode);
       val ssmMetadataTransformer = newSSMMetadataTransformer(dccProjectCode);
-      for (val metadataContext : metadataContainer.getMetadataContextsForDccProjectCode(dccProjectCode)){
+      for (val metadataContext : metadataContainer.getMetadataContexts(dccProjectCode)){
         val sampleMetadata = metadataContext.getSampleMetadata();
         val portalMetadata = metadataContext.getPortalMetadata();
         val file = storage.downloadFile(portalMetadata);

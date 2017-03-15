@@ -54,7 +54,7 @@ public class MetadataContainer {
     return dccProjectCodeMap.keySet();
   }
 
-  public List<MetadataContext> getMetadataContextsForDccProjectCode(String dccProjectCode){
+  public List<MetadataContext> getMetadataContexts(String dccProjectCode){
     checkArgument(dccProjectCodeMap.containsKey(dccProjectCode), "The dccProjectCode [%s] does not exist", dccProjectCode);
     return dccProjectCodeMap.get(dccProjectCode);
   }
