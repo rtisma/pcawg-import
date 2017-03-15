@@ -114,4 +114,5 @@ public class IndelPcawgSSMPrimary extends AbstractPcawgSSMPrimaryBase {
     }
     return out;
   }
+
 }

@@ -108,4 +108,5 @@ public class PcawgSSMMetadata implements SSMMetadata {
   public boolean getPcawgFlag() {
     return true;
   }
+
 }

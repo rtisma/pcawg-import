@@ -16,4 +16,5 @@ public interface SSMMetadata extends Common {
   String getSeqCoverage();
   String getRawDataRepository();
   String getRawDataAccession();
+
 }

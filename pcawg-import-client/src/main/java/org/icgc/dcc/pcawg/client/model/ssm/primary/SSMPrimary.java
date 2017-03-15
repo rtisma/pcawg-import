@@ -25,4 +25,5 @@ public interface SSMPrimary extends Common {
   String getBiologicalValidationStatus();
   String getBiologicalValidationPlatform();
   String getNote();
+
 }

@@ -169,5 +169,6 @@ public abstract class AbstractPcawgSSMPrimaryBase implements SSMPrimary {
   protected String joinAlleles(String ref, String alt){
     return ALLELE_JOINER.join(ref, alt);
   }
+
 }
 
