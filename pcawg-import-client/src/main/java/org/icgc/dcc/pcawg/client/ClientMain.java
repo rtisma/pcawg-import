@@ -41,8 +41,6 @@ import static org.icgc.dcc.pcawg.client.model.ssm.primary.impl.IndelPcawgSSMPrim
 public class ClientMain implements CommandLineRunner {
 
   private static final boolean REQUIRE_INDEX_CFG = false;
-  private static final boolean ALLOW_MISSING_FIELDS_IN_HEADER_CFG = true;
-  private static final boolean OUTPUT_TRAILING_FORMAT_FIELDS_CFG = true;
 
   @Override
   @SneakyThrows

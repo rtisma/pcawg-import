@@ -30,6 +30,7 @@ import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_OUTPUT_V
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_PERSIST_MODE;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.UUID2BARCODE_SHEET_TSV_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.UUID2BARCODE_SHEET_TSV_URL;
+import static org.icgc.dcc.pcawg.client.core.Transformer.newLocalFileTransformer;
 import static org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO.newFileSampleMetadataDAO;
 import static org.icgc.dcc.pcawg.client.download.PortalQueryCreator.newPcawgQueryCreator;
 import static org.icgc.dcc.pcawg.client.download.Storage.downloadFileByURL;
@@ -79,12 +80,14 @@ public class Factory {
 
   public static Transformer<SSMMetadata> newSSMMetadataTransformer(String dccProjectCode){
     log.info("Creating SSMMetadata Transformer for DccProjectCode [{}]", dccProjectCode);
-    return new Transformer<SSMMetadata>(OUTPUT_TSV_DIRECTORY,dccProjectCode, SSM_M_TSV_FILENAME, new SSMMetadataTSVConverter());
+    return newLocalFileTransformer(OUTPUT_TSV_DIRECTORY,
+        dccProjectCode, SSM_M_TSV_FILENAME, new SSMMetadataTSVConverter());
   }
 
   public static Transformer<SSMPrimary> newSSMPrimaryTransformer(String dccProjectCode){
     log.info("Creating SSMPrimary Transformer for DccProjectCode [{}]", dccProjectCode);
-    return new Transformer<SSMPrimary>(OUTPUT_TSV_DIRECTORY,dccProjectCode, SSM_P_TSV_FILENAME, new SSMPrimaryTSVConverter());
+    return newLocalFileTransformer(OUTPUT_TSV_DIRECTORY,
+        dccProjectCode, SSM_P_TSV_FILENAME, new SSMPrimaryTSVConverter());
   }
 
   private static FileSampleMetadataDAO newFileSampleMetadataDAOAndDownload(){

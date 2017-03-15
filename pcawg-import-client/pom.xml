@@ -59,6 +59,15 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 			<optional>true</optional>
 		</dependency>
 
+        <!-- Hadoop Client -->
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-client</artifactId>
+			<version>${hadoop.version}</version>
+		</dependency>
+
+
+
 		<!-- Genomics -->
 		<dependency>
 			<groupId>com.github.samtools</groupId>
@@ -181,6 +190,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
 		<dcc-common.version>4.2.14</dcc-common.version>
+		<!--<hadoop.version>2.7.3</hadoop.version>-->
 
 	</properties>
 

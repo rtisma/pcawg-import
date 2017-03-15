@@ -27,6 +27,8 @@ public class ClientProperties {
   public static final String STORAGE_API = "https://storage.cancercollaboratory.org";
   public static final String PORTAL_API = "https://dcc.icgc.org";
   public static final String TOKEN = getProperty("token");
+  public static final String HDFS_ADDRESS = getProperty("hdfs_address","localhost");
+  public static final String HDFS_PORT = getProperty("hdfs_port","50075");
 
   public static final boolean STORAGE_PERSIST_MODE = parseBoolean(getProperty("persist_mode", FALSE));
   public static final String STORAGE_OUTPUT_VCF_STORAGE_DIR = "storedVCFs";
@@ -41,5 +43,6 @@ public class ClientProperties {
   public static final String OUTPUT_TSV_DIRECTORY = "tsvDir."+System.currentTimeMillis();
   public static final String SSM_P_TSV_FILENAME = "ssm_p.txt";
   public static final String SSM_M_TSV_FILENAME = "ssm_m.txt";
+
 
 }
