@@ -18,26 +18,30 @@
 package org.icgc.dcc.pcawg.client;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.OUTPUT_TSV_DIRECTORY;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_BYPASS_MD5_CHECK;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_OUTPUT_VCF_STORAGE_DIR;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_PERSIST_MODE;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.TOKEN;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.USE_HDFS;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
 @SpringBootApplication
+@Slf4j
+@Configuration
+@EnableConfigurationProperties(ApplicationConfig.class)
 public class ClientMain implements CommandLineRunner {
 
   private static final boolean REQUIRE_INDEX_CFG = false;
 
+  @Autowired
+  private ApplicationConfig applicationConfig;
+
   @Override
   @SneakyThrows
   public void run(String... args) {
+    log.info("Args: {}", applicationConfig.toString());
 
     /*
       TODO: skip using -D, start using cmd line
@@ -49,12 +53,12 @@ public class ClientMain implements CommandLineRunner {
       --output-storage-dir (string)
      */
     val importer = Importer.builder()
-        .token(TOKEN)
-        .hdfsEnabled(USE_HDFS)
-        .outputVcfDir(STORAGE_OUTPUT_VCF_STORAGE_DIR)
-        .persistVcfDownloads(STORAGE_PERSIST_MODE)
-        .bypassMD5Check(STORAGE_BYPASS_MD5_CHECK)
-        .outputTsvDir(OUTPUT_TSV_DIRECTORY)
+        .token(applicationConfig.getToken())
+        .hdfsEnabled(applicationConfig.isHdfs())
+        .outputVcfDir(applicationConfig.getVcf_dir())
+        .persistVcfDownloads(applicationConfig.isPersist())
+        .bypassMD5Check(applicationConfig.isBypass_md5())
+        .outputTsvDir(applicationConfig.getTsv_dir())
         .build();
     importer.run();
 
@@ -62,7 +66,9 @@ public class ClientMain implements CommandLineRunner {
 
 
   public static void main(String... args) {
-    SpringApplication.run(ClientMain.class, args);
+    new SpringApplicationBuilder(ClientMain.class)
+        .addCommandLineProperties(true)
+        .run(args);
   }
 
 }
