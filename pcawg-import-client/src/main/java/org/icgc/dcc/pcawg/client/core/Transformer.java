@@ -47,6 +47,19 @@ public class Transformer<T> implements Closeable{
     return newTransformer(tsvConverter, writer, isNewFile);
   }
 
+  //TODO: This should be in the factory
+  @SneakyThrows
+  public static <T> Transformer<T> newHdfsTransformer(
+      @NonNull String outputDirectory,
+      @NonNull String dccProjectCode,
+      @NonNull String outputTsvFilename,
+      @NonNull TSVConverter<T> tsvConverter ){
+    val outputFilename = getOutputFileName(outputDirectory, dccProjectCode, outputTsvFilename);
+    val writer = new HdfsFileWriter(outputFilename);
+    val isNewFile = true; //always true
+    return newTransformer(tsvConverter, writer, isNewFile );
+  }
+
   @SneakyThrows
   private Transformer( final TSVConverter<T> tsvConverter, final Writer writer, final boolean isNewFile){
     this.tsvConverter = tsvConverter;

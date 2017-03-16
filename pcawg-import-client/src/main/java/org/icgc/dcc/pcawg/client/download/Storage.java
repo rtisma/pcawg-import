@@ -41,7 +41,6 @@ import static java.nio.file.Files.copy;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_API;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.TOKEN;
 
 @Value
 @Slf4j
@@ -57,13 +56,20 @@ public class Storage {
 
   private final boolean bypassMD5Check;
 
+  private final String token;
+
   private static String createTempFilename() {
     return "tmp." + System.currentTimeMillis() + ".vcf.gz";
   }
 
-  public Storage(final boolean persist, @NonNull final String outputDirName, final boolean bypassMD5Check) {
+  public static Storage newStorage(final boolean persist, String outputDirName, final boolean bypassMD5Check, String token){
+    return new Storage(persist, outputDirName, bypassMD5Check, token);
+  }
+
+  private Storage(final boolean persist, @NonNull final String outputDirName, final boolean bypassMD5Check, String token) {
     this.bypassMD5Check = bypassMD5Check;
     this.persist = persist;
+    this.token = token;
     this.outputDir = Paths.get(outputDirName).toAbsolutePath();
     initDir(outputDir);
     this.currentTime = System.currentTimeMillis();
@@ -96,7 +102,7 @@ public class Storage {
 
   // Download file regardless of persist mode
   @SneakyThrows
-  private static File downloadFileByObjectId(@NonNull final String objectId, @NonNull final String filename) {
+  private File downloadFileByObjectId(@NonNull final String objectId, @NonNull final String filename) {
     val objectUrl = getObjectUrl(STORAGE_API,objectId);
     val output = Paths.get(filename);
 
@@ -155,10 +161,10 @@ public class Storage {
 
 
   @SneakyThrows
-  public static URL getObjectUrl(@NonNull final String api, @NonNull final String objectId) {
+  public URL getObjectUrl(@NonNull final String api, @NonNull final String objectId) {
     val storageUrl = new URL(api + "/download/" + objectId + "?offset=0&length=-1&external=true");
     val connection = (HttpURLConnection) storageUrl.openConnection();
-    connection.setRequestProperty(AUTHORIZATION, "Bearer " + TOKEN);
+    connection.setRequestProperty(AUTHORIZATION, "Bearer " + token);
     val object = readObject(connection);
     return getUrl(object);
   }

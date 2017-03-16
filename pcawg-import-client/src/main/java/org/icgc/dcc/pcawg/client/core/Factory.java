@@ -28,23 +28,28 @@ import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_P_TSV_FILENA
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_BYPASS_MD5_CHECK;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_OUTPUT_VCF_STORAGE_DIR;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_PERSIST_MODE;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.TOKEN;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.USE_HDFS;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.UUID2BARCODE_SHEET_TSV_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.UUID2BARCODE_SHEET_TSV_URL;
+import static org.icgc.dcc.pcawg.client.core.Transformer.newHdfsTransformer;
 import static org.icgc.dcc.pcawg.client.core.Transformer.newLocalFileTransformer;
 import static org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO.newFileSampleMetadataDAO;
 import static org.icgc.dcc.pcawg.client.download.PortalQueryCreator.newPcawgQueryCreator;
 import static org.icgc.dcc.pcawg.client.download.Storage.downloadFileByURL;
+import static org.icgc.dcc.pcawg.client.download.Storage.newStorage;
 import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
 
 @NoArgsConstructor(access = PRIVATE)
 @Slf4j
 public class Factory {
 
-  public static Storage newStorage() {
+  public static Storage newDefaultStorage() {
     log.info("Creating storage instance with persistMode: {}, outputDir: {}, and md5BypassEnable: {}",
-        STORAGE_PERSIST_MODE, STORAGE_OUTPUT_VCF_STORAGE_DIR, STORAGE_BYPASS_MD5_CHECK);
-    return new Storage(STORAGE_PERSIST_MODE, STORAGE_OUTPUT_VCF_STORAGE_DIR, STORAGE_BYPASS_MD5_CHECK);
+        STORAGE_PERSIST_MODE, STORAGE_OUTPUT_VCF_STORAGE_DIR, STORAGE_BYPASS_MD5_CHECK, TOKEN);
+    return newStorage(STORAGE_PERSIST_MODE, STORAGE_OUTPUT_VCF_STORAGE_DIR, STORAGE_BYPASS_MD5_CHECK, TOKEN);
   }
+
 
   public static Portal newPortal(WorkflowTypes callerType){
     log.info("Creating new Portal instance for callerType [{}]", callerType.name());
@@ -61,7 +66,7 @@ public class Factory {
   }
 
   private static PortalFileDownloader newPortalFileDownloader(WorkflowTypes callerType){
-    return PortalFileDownloader.newPortalFileDownloader(newPortal(callerType), newStorage());
+    return PortalFileDownloader.newPortalFileDownloader(newPortal(callerType), newDefaultStorage());
   }
 
   public static PortalFileDownloader newConsensusPortalFileDownloader(){
@@ -77,17 +82,36 @@ public class Factory {
         sampleMetadata.isUsProject(),
         sampleMetadata.getAliquotId() );
   }
-
-  public static Transformer<SSMMetadata> newSSMMetadataTransformer(String dccProjectCode){
-    log.info("Creating SSMMetadata Transformer for DccProjectCode [{}]", dccProjectCode);
-    return newLocalFileTransformer(OUTPUT_TSV_DIRECTORY,
-        dccProjectCode, SSM_M_TSV_FILENAME, new SSMMetadataTSVConverter());
+  public static Transformer<SSMMetadata> newDefaultSSMMetadataTransformer(String dccProjectCode){
+    return newSSMMetadataTransformer(dccProjectCode, OUTPUT_TSV_DIRECTORY, USE_HDFS);
   }
 
-  public static Transformer<SSMPrimary> newSSMPrimaryTransformer(String dccProjectCode){
+  public static Transformer<SSMMetadata> newSSMMetadataTransformer(String dccProjectCode, String outputTsvDir, final boolean useHdfs){
+    log.info("Creating SSMMetadata Transformer for DccProjectCode [{}]", dccProjectCode);
+    if (useHdfs){
+      log.info("Using HDFS transformer");
+      return newHdfsTransformer(outputTsvDir,
+          dccProjectCode, SSM_M_TSV_FILENAME, new SSMMetadataTSVConverter());
+    } else {
+      return newLocalFileTransformer(outputTsvDir,
+          dccProjectCode, SSM_M_TSV_FILENAME, new SSMMetadataTSVConverter());
+    }
+  }
+
+  public static Transformer<SSMPrimary> newDefaultSSMPrimaryTransformer(String dccProjectCode){
+    return newSSMPrimaryTransformer(dccProjectCode, OUTPUT_TSV_DIRECTORY, USE_HDFS);
+  }
+
+  public static Transformer<SSMPrimary> newSSMPrimaryTransformer(String dccProjectCode, String outputTsvDir, final boolean useHdfs){
     log.info("Creating SSMPrimary Transformer for DccProjectCode [{}]", dccProjectCode);
-    return newLocalFileTransformer(OUTPUT_TSV_DIRECTORY,
-        dccProjectCode, SSM_P_TSV_FILENAME, new SSMPrimaryTSVConverter());
+    if (useHdfs) {
+      log.info("Using HDFS transformer");
+      return newHdfsTransformer(outputTsvDir,
+          dccProjectCode, SSM_P_TSV_FILENAME, new SSMPrimaryTSVConverter());
+    } else {
+      return newLocalFileTransformer(outputTsvDir,
+          dccProjectCode, SSM_P_TSV_FILENAME, new SSMPrimaryTSVConverter());
+    }
   }
 
   private static FileSampleMetadataDAO newFileSampleMetadataDAOAndDownload(){

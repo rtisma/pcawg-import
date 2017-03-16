@@ -17,26 +17,19 @@
  */
 package org.icgc.dcc.pcawg.client;
 
-import htsjdk.variant.vcf.VCFFileReader;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
-import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.SnvMnvPcawgSSMPrimary;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.util.Arrays;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.OUTPUT_TSV_DIRECTORY;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_BYPASS_MD5_CHECK;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_OUTPUT_VCF_STORAGE_DIR;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_PERSIST_MODE;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.TOKEN;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.USE_HDFS;
 
-import static org.icgc.dcc.pcawg.client.core.Factory.newMetadataContainer;
-import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadata;
-import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadataTransformer;
-import static org.icgc.dcc.pcawg.client.core.Factory.newSSMPrimaryTransformer;
-import static org.icgc.dcc.pcawg.client.core.Factory.newStorage;
-import static org.icgc.dcc.pcawg.client.model.ssm.primary.impl.IndelPcawgSSMPrimary.newIndelSSMPrimary;
-
-@Slf4j
 @SpringBootApplication
 public class ClientMain implements CommandLineRunner {
 
@@ -45,50 +38,26 @@ public class ClientMain implements CommandLineRunner {
   @Override
   @SneakyThrows
   public void run(String... args) {
-    log.info("****** PCAWG VCF Import Client ******");
-    log.info("Passed arguments: {}", Arrays.toString(args));
 
-    val metadataContainer = newMetadataContainer();
-    val storage = newStorage();
-    val totalMetadataContexts = metadataContainer.getTotalMetadataContexts();
-    int countMetadataContexts = 0;
-    val totalDccProjectCodes = metadataContainer.getDccProjectCodes().size();
-    int countDccProjectCodes  = 0;
-    for (val dccProjectCode : metadataContainer.getDccProjectCodes()){
-      log.info("Processing DccProjectCode ( {} / {} ): {}", ++countDccProjectCodes, totalDccProjectCodes, dccProjectCode);
-      val ssmPrimaryTransformer = newSSMPrimaryTransformer(dccProjectCode);
-      val ssmMetadataTransformer = newSSMMetadataTransformer(dccProjectCode);
-      for (val metadataContext : metadataContainer.getMetadataContexts(dccProjectCode)){
-        val sampleMetadata = metadataContext.getSampleMetadata();
-        val portalMetadata = metadataContext.getPortalMetadata();
-        val file = storage.downloadFile(portalMetadata);
-        val dataType = sampleMetadata.getDataType();
-        log.info("Loading File ( {} / {} ): {}", ++countMetadataContexts, totalMetadataContexts, portalMetadata.getPortalFilename().getFilename());
-        val ssmMetadata = newSSMMetadata(sampleMetadata);
-        ssmMetadataTransformer.transform(ssmMetadata);
-        val vcf = new VCFFileReader(file, REQUIRE_INDEX_CFG);
-        for (val variant : vcf){
-          SSMPrimary ssmPrimary = null;
-          //TODO: clean up this hardcoding. Create VCF class that does this conversion and processing, and ecapsulated this logic
-            if (dataType.toLowerCase().contains("indel")){
-              ssmPrimary = newIndelSSMPrimary(
-                          variant,
-                          sampleMetadata.getAnalysisId(),
-                          sampleMetadata.getAnalyzedSampleId());
-            } else if(dataType.toLowerCase().contains("snv_mnv")){
-              ssmPrimary = SnvMnvPcawgSSMPrimary.newSnvMnvSSMPrimary(
-                  variant,
-                  sampleMetadata.getAnalysisId(),
-                  sampleMetadata.getAnalyzedSampleId());
-            } else {
-              throw new IllegalStateException("The dataType "+dataType+" is unrecognized");
-            }
-          ssmPrimaryTransformer.transform(ssmPrimary);
-        }
-      }
-      ssmPrimaryTransformer.close();
-      ssmMetadataTransformer.close();
-    }
+    /*
+      TODO: skip using -D, start using cmd line
+      --token (string)
+      --hdfs (true/false)
+      --output-dir (string, default tsv.epoch)
+      --persist-downloads  (true/false)
+      --bypass-md5 (true/false)
+      --output-storage-dir (string)
+     */
+    val importer = Importer.builder()
+        .token(TOKEN)
+        .hdfsEnabled(USE_HDFS)
+        .outputVcfDir(STORAGE_OUTPUT_VCF_STORAGE_DIR)
+        .persistVcfDownloads(STORAGE_PERSIST_MODE)
+        .bypassMD5Check(STORAGE_BYPASS_MD5_CHECK)
+        .outputTsvDir(OUTPUT_TSV_DIRECTORY)
+        .build();
+    importer.run();
+
   }
 
 

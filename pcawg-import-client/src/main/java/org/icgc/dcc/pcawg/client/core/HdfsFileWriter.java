@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.net.URI;
 
 @Slf4j
 public class HdfsFileWriter extends Writer {
@@ -33,6 +32,8 @@ public class HdfsFileWriter extends Writer {
     val file = new Path(filename);
     if( fs.exists(file)){
       fs.delete(file, true);
+    } else {
+      fs.mkdirs(file.getParent());
     }
     return fs.create(file);
   }
@@ -46,9 +47,10 @@ public class HdfsFileWriter extends Writer {
   }
 
   @SneakyThrows
-  public HdfsFileWriter(String hdfsAddress, String hdfsPort, String outputFilename) throws IOException{
+  public HdfsFileWriter(String outputFilename) throws IOException{
     log.info("Connecting to: {}", DEFAULT_CONF.get(FS_PARAM_NAME));
-    val hdfs = FileSystem.get(new URI(HDFS+"://"+hdfsAddress+":"+hdfsPort), DEFAULT_CONF);
+    val hdfs = FileSystem.getLocal(DEFAULT_CONF);
+//    FileSystem.get(new URI(HDFS+":/"+hdfsAddress+":"+hdfsPort), DEFAULT_CONF);
     val os = createNewOutputStream(hdfs, outputFilename);
     this.internalWriter = new BufferedWriter(new OutputStreamWriter(os));
     this.hdfs = hdfs;
