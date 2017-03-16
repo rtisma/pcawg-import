@@ -8,6 +8,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Slf4j
 public class HDFSWriterTest {
@@ -19,7 +20,7 @@ public class HDFSWriterTest {
     val filename = "/hdfs/tmp/rob_test.txt";
     val outputFilename = start+filename;
     System.out.println("outputFilename: "+outputFilename);
-    val writer = new HdfsFileWriter(outputFilename);
+    val writer = new HdfsFileWriter(outputFilename, Optional.empty(), Optional.empty());
       System.out.println("writing");
       writer.write("hello this is rob");
   }

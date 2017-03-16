@@ -34,4 +34,9 @@ public class ApplicationConfig {
       @NonNull
       private String tsv_dir = OUTPUT_TSV_DIRECTORY;
 
+      @NonNull
+      private String core_xml = null;
+
+      @NonNull
+      private String hdfs_xml = null;
 }

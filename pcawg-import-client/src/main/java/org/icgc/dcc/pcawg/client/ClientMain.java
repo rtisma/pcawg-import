@@ -27,13 +27,13 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Optional;
+
 @SpringBootApplication
 @Slf4j
 @Configuration
 @EnableConfigurationProperties(ApplicationConfig.class)
 public class ClientMain implements CommandLineRunner {
-
-  private static final boolean REQUIRE_INDEX_CFG = false;
 
   @Autowired
   private ApplicationConfig applicationConfig;
@@ -43,15 +43,6 @@ public class ClientMain implements CommandLineRunner {
   public void run(String... args) {
     log.info("Args: {}", applicationConfig.toString());
 
-    /*
-      TODO: skip using -D, start using cmd line
-      --token (string)
-      --hdfs (true/false)
-      --output-dir (string, default tsv.epoch)
-      --persist-downloads  (true/false)
-      --bypass-md5 (true/false)
-      --output-storage-dir (string)
-     */
     val importer = Importer.builder()
         .token(applicationConfig.getToken())
         .hdfsEnabled(applicationConfig.isHdfs())
@@ -59,10 +50,13 @@ public class ClientMain implements CommandLineRunner {
         .persistVcfDownloads(applicationConfig.isPersist())
         .bypassMD5Check(applicationConfig.isBypass_md5())
         .outputTsvDir(applicationConfig.getTsv_dir())
+        .optionalCoreConfigFilename(Optional.<String>ofNullable(applicationConfig.getCore_xml()))
+        .optionalHdfsConfigFilename(Optional.<String>ofNullable(applicationConfig.getHdfs_xml()))
         .build();
     importer.run();
 
   }
+
 
 
   public static void main(String... args) {

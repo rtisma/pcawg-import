@@ -27,6 +27,8 @@ import org.icgc.dcc.pcawg.client.download.Storage;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.SnvMnvPcawgSSMPrimary;
 
+import java.util.Optional;
+
 import static org.icgc.dcc.pcawg.client.core.Factory.newMetadataContainer;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadata;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadataTransformer;
@@ -51,6 +53,12 @@ public class Importer implements Runnable {
   @NonNull
   private final String outputTsvDir;
 
+  @NonNull
+  private final Optional<String> optionalCoreConfigFilename;
+
+  @NonNull
+  private final Optional<String> optionalHdfsConfigFilename;
+
   @Override
   @SneakyThrows
   public void run() {
@@ -62,8 +70,10 @@ public class Importer implements Runnable {
     int countDccProjectCodes  = 0;
     for (val dccProjectCode : metadataContainer.getDccProjectCodes()){
       log.info("Processing DccProjectCode ( {} / {} ): {}", ++countDccProjectCodes, totalDccProjectCodes, dccProjectCode);
-      val ssmPrimaryTransformer  = newSSMPrimaryTransformer(dccProjectCode, outputTsvDir, hdfsEnabled);
-      val ssmMetadataTransformer = newSSMMetadataTransformer(dccProjectCode, outputTsvDir, hdfsEnabled);
+      val ssmPrimaryTransformer  = newSSMPrimaryTransformer(dccProjectCode,
+          outputTsvDir, hdfsEnabled, optionalCoreConfigFilename, optionalHdfsConfigFilename);
+      val ssmMetadataTransformer = newSSMMetadataTransformer(dccProjectCode,
+          outputTsvDir, hdfsEnabled, optionalCoreConfigFilename, optionalHdfsConfigFilename);
       for (val metadataContext : metadataContainer.getMetadataContexts(dccProjectCode)){
         val sampleMetadata = metadataContext.getSampleMetadata();
         val portalMetadata = metadataContext.getPortalMetadata();

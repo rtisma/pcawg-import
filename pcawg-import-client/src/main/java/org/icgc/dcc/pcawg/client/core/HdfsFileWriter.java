@@ -12,13 +12,18 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Optional;
 
 @Slf4j
 public class HdfsFileWriter extends Writer {
 
-  private static final Configuration DEFAULT_CONF = new Configuration();
-  private static final String HDFS = "hdfs";
   private static final String FS_PARAM_NAME = "fs.defaultFS";
+  private static final String HDFS = "hdfs";
+
+  private static final Configuration DEFAULT_CONF = new Configuration();
+  {
+    DEFAULT_CONF.set(FS_PARAM_NAME, HDFS+":///");
+  }
 
   private final FileSystem hdfs;
 
@@ -27,13 +32,49 @@ public class HdfsFileWriter extends Writer {
 //  private final String hdfsAddress;
 //  private final String hdfsPort;
 
+  private static Configuration createConfiguration(Optional<String> optionalCoreConfigFilename, Optional<String> optionalHdfsConfigFilename){
+    val conf = new Configuration();
+    log.info("CoreConfigFilename: {}", optionalCoreConfigFilename.isPresent() ? optionalCoreConfigFilename.get() : "null");
+    log.info("HdfsConfigFilename: {}", optionalHdfsConfigFilename.isPresent() ? optionalHdfsConfigFilename.get() : "null");
+    optionalCoreConfigFilename.ifPresent(conf::addResource);
+    optionalHdfsConfigFilename.ifPresent(conf::addResource);
+    return conf;
+  }
+
+
+  @SneakyThrows
+  private static OutputStream createNewOutputStream(Path file, Configuration conf){
+    val fs = file.getFileSystem(conf);
+    log.info("FileName1: {}", file.toString());
+    if( fs.exists(file)){
+      log.info("The file [{}] EXISTS! Deleting it ", file.toString() );
+      fs.delete(file, true);
+    } else {
+      log.info("The file [{}] DNE ", file.toUri().toString() );
+      val parent = file.getParent();
+      if (! fs.exists(parent)){
+        log.info("The parent dir [{}] doesnt exist, will create...  ", parent.toUri().toString() );
+        fs.mkdirs(parent);
+      }
+    }
+    return fs.create(file);
+  }
+
+
   @SneakyThrows
   private static OutputStream createNewOutputStream(FileSystem fs, String filename){
     val file = new Path(filename);
+    log.info("FileName1: {}", file.toString());
     if( fs.exists(file)){
+      log.info("The file [{}] EXISTS! Deleting it ", file.toString() );
       fs.delete(file, true);
     } else {
-      fs.mkdirs(file.getParent());
+      log.info("The file [{}] DNE ", file.toUri().toString() );
+      val parent = file.getParent();
+      if (! fs.exists(parent)){
+        log.info("The parent dir [{}] doesnt exist, will create...  ", parent.toUri().toString() );
+        fs.mkdirs(parent);
+      }
     }
     return fs.create(file);
   }
@@ -41,19 +82,21 @@ public class HdfsFileWriter extends Writer {
   @SneakyThrows
   public HdfsFileWriter(FileSystem hdfs, String outputFilename) throws IOException {
     log.info("Connecting to: {}", hdfs.getConf().get(FS_PARAM_NAME));
+    log.info("Outputting to: {} ", outputFilename);
     val os = createNewOutputStream(hdfs, outputFilename);
     this.internalWriter = new BufferedWriter(new OutputStreamWriter(os));
     this.hdfs = hdfs;
   }
 
   @SneakyThrows
-  public HdfsFileWriter(String outputFilename) throws IOException{
-    log.info("Connecting to: {}", DEFAULT_CONF.get(FS_PARAM_NAME));
-    val hdfs = FileSystem.getLocal(DEFAULT_CONF);
-//    FileSystem.get(new URI(HDFS+":/"+hdfsAddress+":"+hdfsPort), DEFAULT_CONF);
-    val os = createNewOutputStream(hdfs, outputFilename);
+  public HdfsFileWriter(String outputFilename, Optional<String> optionalCoreConfigFilename, Optional<String> optionalHdfsConfigFilename) throws IOException {
+    val file = new Path(outputFilename);
+    val conf = createConfiguration(optionalCoreConfigFilename,optionalHdfsConfigFilename);
+    this.hdfs = file.getFileSystem(conf);
+    log.info("Connecting to: {}", hdfs.getConf().get(FS_PARAM_NAME));
+    log.info("Outputting to: {} ", outputFilename);
+    val os = createNewOutputStream(file,conf  );
     this.internalWriter = new BufferedWriter(new OutputStreamWriter(os));
-    this.hdfs = hdfs;
   }
 
 
