@@ -99,7 +99,6 @@ public class Transformer<T> implements Closeable{
 
   @Override
   public void close() throws IOException {
-      writer.flush();
       writer.close();
   }
 

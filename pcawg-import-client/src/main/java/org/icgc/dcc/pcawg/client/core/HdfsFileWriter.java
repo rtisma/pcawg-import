@@ -113,6 +113,5 @@ public class HdfsFileWriter extends Writer {
   @Override
   public void close() throws IOException {
     internalWriter.close();
-    hdfs.close();
   }
 }
