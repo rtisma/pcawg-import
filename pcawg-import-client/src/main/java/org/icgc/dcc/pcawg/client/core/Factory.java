@@ -83,33 +83,33 @@ public class Factory {
 
   public static Transformer<SSMMetadata> newSSMMetadataTransformer(String dccProjectCode,
       String outputTsvDir, final boolean useHdfs,
-      String hostname, String port, final boolean append){
+      String hostname, String port, final boolean createNewFile){
     log.info("Creating SSMMetadata Transformer for DccProjectCode [{}]", dccProjectCode);
     if (useHdfs){
       log.info("Using HDFS SSMMetadata transformer");
       return newHdfsTransformer(outputTsvDir,
           dccProjectCode, SSM_M_TSV_FILENAME, new SSMMetadataTSVConverter(),
-          hostname, port, append);
+          hostname, port, createNewFile);
 
     } else {
       log.info("Using LOCAL SSMMetadata transformer");
       return newLocalFileTransformer(outputTsvDir,
-          dccProjectCode, SSM_M_TSV_FILENAME, new SSMMetadataTSVConverter());
+          dccProjectCode, SSM_M_TSV_FILENAME, new SSMMetadataTSVConverter(), createNewFile);
     }
   }
   public static Transformer<SSMPrimary> newSSMPrimaryTransformer(String dccProjectCode,
       String outputTsvDir, final boolean useHdfs,
-      String hostname, String port, final boolean append){
+      String hostname, String port, final boolean createNewFile){
     log.info("Creating SSMPrimary Transformer for DccProjectCode [{}]", dccProjectCode);
     if (useHdfs){
       log.info("Using HDFS SSMPrimary transformer");
       return newHdfsTransformer(outputTsvDir,
           dccProjectCode, SSM_P_TSV_FILENAME, new SSMPrimaryTSVConverter(),
-          hostname, port, append);
+          hostname, port, createNewFile);
     } else {
       log.info("Using LOCAL SSMPrimary transformer");
       return newLocalFileTransformer(outputTsvDir,
-          dccProjectCode, SSM_P_TSV_FILENAME, new SSMPrimaryTSVConverter());
+          dccProjectCode, SSM_P_TSV_FILENAME, new SSMPrimaryTSVConverter(), createNewFile);
     }
   }
 

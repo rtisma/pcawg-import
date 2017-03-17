@@ -68,12 +68,13 @@ public class Importer implements Runnable {
     int countMetadataContexts = 0;
     val totalDccProjectCodes = metadataContainer.getDccProjectCodes().size();
     int countDccProjectCodes  = 0;
+    val createNewFile = !append;
     for (val dccProjectCode : metadataContainer.getDccProjectCodes()){
       log.info("Processing DccProjectCode ( {} / {} ): {}", ++countDccProjectCodes, totalDccProjectCodes, dccProjectCode);
       val ssmPrimaryTransformer  = newSSMPrimaryTransformer(dccProjectCode,
-          outputTsvDir, hdfsEnabled, hdfsHostname, hdfsPort, append);
+          outputTsvDir, hdfsEnabled, hdfsHostname, hdfsPort, createNewFile);
       val ssmMetadataTransformer = newSSMMetadataTransformer(dccProjectCode,
-          outputTsvDir, hdfsEnabled, hdfsHostname, hdfsPort, append);
+          outputTsvDir, hdfsEnabled, hdfsHostname, hdfsPort, createNewFile);
       for (val metadataContext : metadataContainer.getMetadataContexts(dccProjectCode)){
         val sampleMetadata = metadataContext.getSampleMetadata();
         val portalMetadata = metadataContext.getPortalMetadata();

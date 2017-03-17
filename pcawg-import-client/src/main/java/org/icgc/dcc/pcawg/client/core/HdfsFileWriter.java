@@ -25,6 +25,12 @@ public class HdfsFileWriter extends Writer {
   @Getter
   private final boolean append;
 
+  /**
+   * State
+   */
+  @Getter
+  private boolean fileExistedPreviously;
+
   private static String createUrl(String fileSystemName, String hostname, String port){
     return fileSystemName+"://"+hostname+":"+port;
   }
@@ -44,9 +50,11 @@ public class HdfsFileWriter extends Writer {
 
   //TODO: clean this up of all logs
   @SneakyThrows
-  private static OutputStream createNewOutputStream(FileSystem fs, Path file, boolean append){
+  private OutputStream createNewOutputStream(FileSystem fs, Path file, boolean append){
     log.info("FileName: {}", file.toString());
-    if( fs.exists(file)){
+    this.fileExistedPreviously = fs.exists(file);
+
+    if(fileExistedPreviously){
       if (!append){
         log.info("The file [{}] EXISTS! Deleting it ", file.toString() );
         fs.delete(file, true);

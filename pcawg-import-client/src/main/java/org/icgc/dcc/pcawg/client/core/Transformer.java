@@ -1,7 +1,9 @@
 package org.icgc.dcc.pcawg.client.core;
 
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.tsv.TSVConverter;
 
@@ -15,15 +17,15 @@ import java.nio.file.Paths;
 
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
 
+@Slf4j
 public class Transformer<T> implements Closeable{
-
-  private static final boolean APPEND_MODE_ENABLED = true;
 
   private final TSVConverter<T> tsvConverter;
 
   private final Writer writer;
 
-  private boolean isNewFile;
+  @Getter
+  private boolean writeHeader;
 
   private static String getOutputFileName(String outputDirectory, String dccProjectCode, String outputTsvFilename){
     return PATH.join(outputDirectory, dccProjectCode, outputTsvFilename);
@@ -39,12 +41,15 @@ public class Transformer<T> implements Closeable{
     @NonNull String outputDirectory,
     @NonNull String dccProjectCode,
     @NonNull String outputTsvFilename,
-    @NonNull TSVConverter<T> tsvConverter ){
+    @NonNull TSVConverter<T> tsvConverter,
+      final boolean createNewFile){
     val outputFilename = getOutputFileName(outputDirectory, dccProjectCode, outputTsvFilename);
     initParentDir(outputFilename);
-    val writer = new FileWriter(outputFilename, APPEND_MODE_ENABLED);
-    val isNewFile = checkIfNewFile(outputFilename);
-    return newTransformer(tsvConverter, writer, isNewFile);
+    val appendMode = !createNewFile;
+    val doesFileExist = checkIfFileExists(outputFilename);
+    val writeHeaderLineInitially =  shouldWriteHeader(createNewFile, doesFileExist);
+    val writer = new FileWriter(outputFilename, appendMode);
+    return newTransformer(tsvConverter, writer, writeHeaderLineInitially);
   }
 
   //TODO: This should be in the factory
@@ -56,22 +61,29 @@ public class Transformer<T> implements Closeable{
       @NonNull TSVConverter<T> tsvConverter,
       @NonNull String hostname,
       @NonNull String port,
-      final boolean append){
+      final boolean createNewFile){
     val outputFilename = getOutputFileName(outputDirectory, dccProjectCode, outputTsvFilename);
-    val writer = new HdfsFileWriter(hostname, port, outputFilename, append);
-    val isNewFile = !append;
-    return newTransformer(tsvConverter, writer, isNewFile );
+    val appendMode = !createNewFile;
+    val hdfsFileWriter= new HdfsFileWriter(hostname, port, outputFilename, appendMode);
+    val doesFileExist = hdfsFileWriter.isFileExistedPreviously();
+    val writeHeaderLineInitially =  shouldWriteHeader(createNewFile, doesFileExist);
+    return newTransformer(tsvConverter, hdfsFileWriter, writeHeaderLineInitially);
+  }
+
+  private static boolean shouldWriteHeader(boolean createNewFile, boolean doesFileExist){
+      return createNewFile || !doesFileExist;
   }
 
   @SneakyThrows
-  private Transformer( final TSVConverter<T> tsvConverter, final Writer writer, final boolean isNewFile){
+  private Transformer( final TSVConverter<T> tsvConverter, final Writer writer, final boolean writeHeader){
     this.tsvConverter = tsvConverter;
-    this.isNewFile = isNewFile;
+    this.writeHeader = writeHeader;
+    log.info("WriterHeader: {}", writeHeader);
     this.writer = writer;
   }
 
-  private static boolean checkIfNewFile(String outputFilename){
-    return !Paths.get(outputFilename).toFile().exists();
+  private static boolean checkIfFileExists(String outputFilename){
+    return Paths.get(outputFilename).toFile().exists();
   }
 
   @SneakyThrows
@@ -90,9 +102,9 @@ public class Transformer<T> implements Closeable{
 
   @SneakyThrows
   public void transform(T t){
-    if(isNewFile){
+    if(writeHeader){
       writer.write(tsvConverter.toTSVHeader()+"\n");
-      isNewFile = false;
+      writeHeader = false;
     }
     writer.write(tsvConverter.toTSVData(t)+"\n");
   }
