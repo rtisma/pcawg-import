@@ -46,6 +46,7 @@ import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_API;
 @Slf4j
 public class Storage {
 
+
   private final boolean persist;
 
   private final Path outputDir;
@@ -58,8 +59,11 @@ public class Storage {
 
   private final String token;
 
-  private static String createTempFilename() {
-    return "tmp." + System.currentTimeMillis() + ".vcf.gz";
+  private static Path createTempFile(Path outputDir){
+    val filename = "tmp." + System.currentTimeMillis() + ".vcf.gz";
+    val path = outputDir.resolve(filename);
+    path.toFile().deleteOnExit();
+    return path;
   }
 
   public static Storage newStorage(final boolean persist, String outputDirName, final boolean bypassMD5Check, String token){
@@ -73,7 +77,7 @@ public class Storage {
     this.outputDir = Paths.get(outputDirName).toAbsolutePath();
     initDir(outputDir);
     this.currentTime = System.currentTimeMillis();
-    this.tempFile = outputDir.resolve(createTempFilename());
+    this.tempFile = createTempFile(outputDir);
   }
 
   @SneakyThrows
