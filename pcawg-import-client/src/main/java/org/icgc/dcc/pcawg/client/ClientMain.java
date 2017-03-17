@@ -27,8 +27,6 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Optional;
-
 @SpringBootApplication
 @Slf4j
 @Configuration
@@ -50,8 +48,9 @@ public class ClientMain implements CommandLineRunner {
         .persistVcfDownloads(applicationConfig.isPersist())
         .bypassMD5Check(applicationConfig.isBypass_md5())
         .outputTsvDir(applicationConfig.getTsv_dir())
-        .optionalCoreConfigFilename(Optional.<String>ofNullable(applicationConfig.getCore_xml()))
-        .optionalHdfsConfigFilename(Optional.<String>ofNullable(applicationConfig.getHdfs_xml()))
+        .append(applicationConfig.isAppend())
+        .hdfsHostname(applicationConfig.getHdfs_hostname())
+        .hdfsPort(applicationConfig.getHdfs_port())
         .build();
     importer.run();
 

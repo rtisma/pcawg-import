@@ -12,7 +12,6 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
 
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
 
@@ -55,11 +54,12 @@ public class Transformer<T> implements Closeable{
       @NonNull String dccProjectCode,
       @NonNull String outputTsvFilename,
       @NonNull TSVConverter<T> tsvConverter,
-      @NonNull Optional<String> optionalCoreConfigFilename,
-      @NonNull Optional<String> optionalHdfsConfigFilename ){
+      @NonNull String hostname,
+      @NonNull String port,
+      final boolean append){
     val outputFilename = getOutputFileName(outputDirectory, dccProjectCode, outputTsvFilename);
-    val writer = new HdfsFileWriter(outputFilename, optionalCoreConfigFilename, optionalHdfsConfigFilename);
-    val isNewFile = true; //always true
+    val writer = new HdfsFileWriter(hostname, port, outputFilename, append);
+    val isNewFile = !append;
     return newTransformer(tsvConverter, writer, isNewFile );
   }
 

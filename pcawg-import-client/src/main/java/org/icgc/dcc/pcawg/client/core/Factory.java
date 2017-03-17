@@ -18,7 +18,6 @@ import org.icgc.dcc.pcawg.client.tsv.impl.SSMPrimaryTSVConverter;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
 import java.nio.file.Paths;
-import java.util.Optional;
 
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_FILENAME;
@@ -82,32 +81,33 @@ public class Factory {
         sampleMetadata.getAliquotId() );
   }
 
-  public static Transformer<SSMMetadata> newSSMMetadataTransformer(String dccProjectCode, String outputTsvDir, final boolean useHdfs,
-      Optional<String> optionalCoreConfigFilename,
-      Optional<String> optionalHdfsConfigFilename ){
+  public static Transformer<SSMMetadata> newSSMMetadataTransformer(String dccProjectCode,
+      String outputTsvDir, final boolean useHdfs,
+      String hostname, String port, final boolean append){
     log.info("Creating SSMMetadata Transformer for DccProjectCode [{}]", dccProjectCode);
     if (useHdfs){
-      log.info("Using HDFS transformer");
+      log.info("Using HDFS SSMMetadata transformer");
       return newHdfsTransformer(outputTsvDir,
-          dccProjectCode, SSM_M_TSV_FILENAME, new SSMMetadataTSVConverter(), optionalCoreConfigFilename, optionalHdfsConfigFilename);
+          dccProjectCode, SSM_M_TSV_FILENAME, new SSMMetadataTSVConverter(),
+          hostname, port, append);
+
     } else {
+      log.info("Using LOCAL SSMMetadata transformer");
       return newLocalFileTransformer(outputTsvDir,
           dccProjectCode, SSM_M_TSV_FILENAME, new SSMMetadataTSVConverter());
     }
   }
-
-
   public static Transformer<SSMPrimary> newSSMPrimaryTransformer(String dccProjectCode,
-      String outputTsvDir,
-      final boolean useHdfs,
-      Optional<String> optionalCoreConfigFilename,
-      Optional<String> optionalHdfsConfigFilename ){
+      String outputTsvDir, final boolean useHdfs,
+      String hostname, String port, final boolean append){
     log.info("Creating SSMPrimary Transformer for DccProjectCode [{}]", dccProjectCode);
-    if (useHdfs) {
-      log.info("Using HDFS transformer");
+    if (useHdfs){
+      log.info("Using HDFS SSMPrimary transformer");
       return newHdfsTransformer(outputTsvDir,
-          dccProjectCode, SSM_P_TSV_FILENAME, new SSMPrimaryTSVConverter(), optionalCoreConfigFilename, optionalHdfsConfigFilename );
+          dccProjectCode, SSM_P_TSV_FILENAME, new SSMPrimaryTSVConverter(),
+          hostname, port, append);
     } else {
+      log.info("Using LOCAL SSMPrimary transformer");
       return newLocalFileTransformer(outputTsvDir,
           dccProjectCode, SSM_P_TSV_FILENAME, new SSMPrimaryTSVConverter());
     }
