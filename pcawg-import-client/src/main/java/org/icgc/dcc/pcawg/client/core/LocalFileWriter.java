@@ -16,7 +16,8 @@ import java.nio.file.Paths;
 public class LocalFileWriter extends FileWriter {
 
   public static LocalFileWriter newLocalFileWriter(String filename, boolean append, boolean createNonExistentDirectories) throws IOException{
-    return new LocalFileWriter(filename, append, createNonExistentDirectories);
+    val fileAlreadyExists= Paths.get(filename).toFile().exists();
+    return new LocalFileWriter(filename, append, createNonExistentDirectories, fileAlreadyExists);
   }
 
   @Getter
@@ -28,15 +29,21 @@ public class LocalFileWriter extends FileWriter {
   @Getter
   private final boolean createNonExistentDirectories;
 
-  private LocalFileWriter(@NonNull String filename, final boolean append, final boolean createNonExistentDirectories) throws IOException {
+  @Getter
+  private final boolean fileExistedPreviously;
+
+  private LocalFileWriter(@NonNull String filename, final boolean append,
+      final boolean createNonExistentDirectories, final boolean fileExistedPreviously) throws IOException {
     super(createParentDirectoriesFirst(filename, createNonExistentDirectories), append);
     this.filename = filename;
     this.append = append;
+    this.fileExistedPreviously = fileExistedPreviously;
     this.createNonExistentDirectories = createNonExistentDirectories;
   }
 
   @SneakyThrows
   private static String createParentDirectoriesFirst(String filename, boolean createNonExistentDirectories){
+
     if(createNonExistentDirectories){
       val filePath = Paths.get(filename);
       val parent = filePath.toFile().getParentFile();
