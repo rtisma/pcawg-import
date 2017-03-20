@@ -21,11 +21,6 @@ public class IndelPcawgSSMPrimary extends AbstractPcawgSSMPrimaryBase {
     this.mutationType = calcMutationType();
   }
 
-
-  @Override public int hashCode() {
-    return getMutationType() != null ? getMutationType().hashCode() : 0;
-  }
-
   private MutationTypes calcMutationType(){
     val refLength = getReferenceAlleleLength();
     val altLength = getAlternativeAlleleLength();
