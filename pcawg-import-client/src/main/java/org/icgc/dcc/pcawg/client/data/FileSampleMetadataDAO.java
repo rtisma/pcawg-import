@@ -1,7 +1,7 @@
 package org.icgc.dcc.pcawg.client.data;
 
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.pcawg.client.data.SampleMetadataDAO.isUSProject;
 
 @Slf4j
@@ -26,20 +27,59 @@ public class FileSampleMetadataDAO implements SampleMetadataDAO {
   private static final String WGS = "WGS";
   private static final String NORMAL = "normal";
 
+  public static FileSampleMetadataDAO newFileSampleMetadataDAO(String sampleSheetFilename, boolean sampleSheetHasHeader,
+      String uuid2BarcodeSheetFilename, boolean uuid2BarcodeSheetHasHeader){
+    return new FileSampleMetadataDAO(sampleSheetFilename, sampleSheetHasHeader,uuid2BarcodeSheetFilename, uuid2BarcodeSheetHasHeader);
+  }
+
+  @SneakyThrows
+  private static <T> List<T> readTsv(@NonNull  String filename,
+      final boolean hasHeader,
+      @NonNull Function<String, T > lineConversionFunctor){
+    val file = new File(filename);
+    checkState(file.exists(), "File %s DNE", filename);
+    val br = new BufferedReader(new FileReader(file));
+    val skipValue = hasHeader ? 1 : 0;
+    val list = br.lines()
+        .skip(skipValue)
+        .map(lineConversionFunctor::apply)
+        .collect(toImmutableList());
+    br.close();
+    return list;
+  }
+
   @NonNull
   private final String sampleSheetFilename;
+
+  @Getter
+  private final boolean sampleSheetHasHeader;
 
   @NonNull
   private final String uuid2BarcodeSheetFilename;
 
+  @Getter
+  private final boolean uuid2BarcodeSheetHasHeader;
+
+
   private final List<SampleSheetModel> sampleSheetList;
   private final List<Uuid2BarcodeSheetModel> uuid2BarcodeSheetList;
 
-  public FileSampleMetadataDAO(String sampleSheetFilename, String uuid2BarcodeSheetFilename) {
+  private FileSampleMetadataDAO(String sampleSheetFilename, boolean sampleSheetHasHeader,
+      String uuid2BarcodeSheetFilename, boolean uuid2BarcodeSheetHasHeader) {
     this.sampleSheetFilename = sampleSheetFilename;
     this.uuid2BarcodeSheetFilename = uuid2BarcodeSheetFilename;
-    this.sampleSheetList = readSampleSheet();
-    this.uuid2BarcodeSheetList = readUuid2BarcodeSheet();
+    this.sampleSheetHasHeader = sampleSheetHasHeader;
+    this.uuid2BarcodeSheetHasHeader = uuid2BarcodeSheetHasHeader;
+    this.sampleSheetList = readSampleSheet(sampleSheetHasHeader);
+    this.uuid2BarcodeSheetList = readUuid2BarcodeSheet(uuid2BarcodeSheetHasHeader);
+  }
+
+  public int getSampleSheetSize(){
+    return sampleSheetList.size();
+  }
+
+  public int getUUID2BarcodeSheetSize(){
+    return uuid2BarcodeSheetList.size();
   }
 
   private SampleSheetModel getFirstSampleSheet(String aliquotId){
@@ -105,36 +145,14 @@ public class FileSampleMetadataDAO implements SampleMetadataDAO {
         .filter(z -> z.getDccSpecimenType().toLowerCase().contains(NORMAL));
   }
 
-  private List<SampleSheetModel> readSampleSheet(){
-    return readTsv(sampleSheetFilename, true, SampleSheetModel::newSampleSheetModel);
+  private List<SampleSheetModel> readSampleSheet(final boolean hasHeader){
+    return readTsv(sampleSheetFilename, hasHeader, SampleSheetModel::newSampleSheetModel);
   }
 
-  private List<Uuid2BarcodeSheetModel> readUuid2BarcodeSheet(){
-    return readTsv(uuid2BarcodeSheetFilename, true, Uuid2BarcodeSheetModel::newUuid2BarcodeSheetModel);
+  private List<Uuid2BarcodeSheetModel> readUuid2BarcodeSheet( final boolean hasHeader){
+    return readTsv(uuid2BarcodeSheetFilename, hasHeader, Uuid2BarcodeSheetModel::newUuid2BarcodeSheetModel);
   }
 
-  @SneakyThrows
-  private static <T> List<T> readTsv(@NonNull  String filename,
-      final boolean hasHeader,
-      @NonNull Function<String, T > lineConvertionFunctor){
-    val file = new File(filename);
-    checkState(file.exists(), "File %s DNE", filename);
-    val br = new BufferedReader(new FileReader(file));
-    String line;
-    val builder = ImmutableList.<T>builder();
-    boolean skipLine = hasHeader;
-    while((line = br.readLine()) != null){
-      if (!skipLine) {
-        builder.add(lineConvertionFunctor.apply(line));
-      }
-      skipLine = false;
-    }
-    br.close();
-    return builder.build();
-  }
 
-  public static FileSampleMetadataDAO newFileSampleMetadataDAO(String sampleSheetFilename, String uuid2BarcodeSheetFilename){
-    return new FileSampleMetadataDAO(sampleSheetFilename, uuid2BarcodeSheetFilename);
-  }
 
 }

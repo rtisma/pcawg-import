@@ -24,12 +24,14 @@ import java.io.IOException;
 import java.nio.file.Paths;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_HAS_HEADER;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_URL;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_BYPASS_MD5_CHECK;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_OUTPUT_VCF_STORAGE_DIR;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_PERSIST_MODE;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.TOKEN;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.UUID2BARCODE_SHEET_HAS_HEADER;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.UUID2BARCODE_SHEET_TSV_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.UUID2BARCODE_SHEET_TSV_URL;
 import static org.icgc.dcc.pcawg.client.core.HdfsFileWriter.newDefaultHdfsFileWriter;
@@ -107,24 +109,32 @@ public class Factory {
     return newFilesystemTransformer(context, new SSMMetadataTSVConverter(), useHdfs);
   }
 
-  private static FileSampleMetadataDAO newFileSampleMetadataDAOAndDownload(){
+  private static void  downloadSheet(String url, String outputFilename){
     val outputDir = Paths.get("").toAbsolutePath().toString();
-    if (Paths.get(SAMPLE_SHEET_TSV_FILENAME).toFile().exists()){
-      log.info("Already downloaded [{}] to directory [{}] from url: {}", SAMPLE_SHEET_TSV_FILENAME, outputDir,SAMPLE_SHEET_TSV_URL);
+    if (Paths.get(outputFilename).toFile().exists()){
+      log.info("Already downloaded [{}] to directory [{}] from url: {}", outputFilename, outputDir,url);
     } else {
-      log.info("Downloading [{}] to directory [{}] from url: {}", SAMPLE_SHEET_TSV_FILENAME, outputDir,SAMPLE_SHEET_TSV_URL);
-      downloadFileByURL(SAMPLE_SHEET_TSV_URL, SAMPLE_SHEET_TSV_FILENAME);
+      log.info("Downloading [{}] to directory [{}] from url: {}", outputFilename, outputDir,url);
+      downloadFileByURL(url, outputFilename);
     }
-
-    if (Paths.get(UUID2BARCODE_SHEET_TSV_FILENAME).toFile().exists()){
-      log.info("Already downloaded [{}] to directory [{}] from url: {}", UUID2BARCODE_SHEET_TSV_FILENAME, outputDir, UUID2BARCODE_SHEET_TSV_URL);
-    } else {
-      log.info("Downloading [{}] to directory [{}] from url: {}", UUID2BARCODE_SHEET_TSV_FILENAME, outputDir, UUID2BARCODE_SHEET_TSV_URL);
-      downloadFileByURL(UUID2BARCODE_SHEET_TSV_URL, UUID2BARCODE_SHEET_TSV_FILENAME);
-    }
-    log.info("Done downloading, creating FileSampleMetadataDAO");
-    return newFileSampleMetadataDAO(SAMPLE_SHEET_TSV_FILENAME, UUID2BARCODE_SHEET_TSV_FILENAME);
   }
+
+  public static void downloadSampleSheet(String outputFilename){
+    downloadSheet(SAMPLE_SHEET_TSV_URL, outputFilename);
+  }
+
+  public static void downloadUUID2BarcodeSheet(String outputFilename){
+    downloadSheet(UUID2BARCODE_SHEET_TSV_URL, outputFilename);
+  }
+
+  public static FileSampleMetadataDAO newFileSampleMetadataDAOAndDownload(){
+    downloadSampleSheet(SAMPLE_SHEET_TSV_FILENAME);
+    downloadUUID2BarcodeSheet(UUID2BARCODE_SHEET_TSV_FILENAME);
+    log.info("Done downloading, creating FileSampleMetadataDAO");
+    return newFileSampleMetadataDAO(SAMPLE_SHEET_TSV_FILENAME, SAMPLE_SHEET_HAS_HEADER,
+        UUID2BARCODE_SHEET_TSV_FILENAME, UUID2BARCODE_SHEET_HAS_HEADER);
+  }
+
 
   public static SampleMetadataDAO newSampleMetadataDAO(){
     return newFileSampleMetadataDAOAndDownload();
@@ -163,4 +173,5 @@ public class Factory {
         context.getOutputFilename(),
         context.isAppend() );
   }
+
 }

@@ -1,15 +1,26 @@
 package org.icgc.dcc.pcawg.client.download;
 
+import com.google.common.io.Resources;
+import lombok.SneakyThrows;
 import lombok.val;
+import org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO;
 import org.junit.Test;
+
+import java.io.File;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSampleMetadataDAO;
+import static org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO.newFileSampleMetadataDAO;
 import static org.icgc.dcc.pcawg.client.model.metadata.file.PortalFilename.newPortalFilename;
 import static org.icgc.dcc.pcawg.client.model.metadata.project.SampleSheetModel.newSampleSheetModel;
 import static org.icgc.dcc.pcawg.client.model.metadata.project.Uuid2BarcodeSheetModel.newUuid2BarcodeSheetModel;
 
 public class SampleMetadataDAOTest {
+
+  private static final String TEST_SAMPLE_SHEET_FILENAME = "fixtures/test_sample_sheet.tsv";
+  private static final String TEST_UUID2BARCODE_SHEET_FILENAME = "fixtures/test_uuid2barcode_sheet.tsv";
+
+
 
   @Test
   public void testSampleSheetParser(){
@@ -30,6 +41,38 @@ public class SampleMetadataDAOTest {
     val sheet = newUuid2BarcodeSheetModel(tsvLine);
     assertThat(sheet.getUuid()).isEqualTo("c spaceC 3");
     assertThat(sheet.getTcgaBarcode()).isEqualTo("d spaceD 4");
+  }
+
+  @SneakyThrows
+  public File getTestFile(String filename){
+    val url = Resources.getResource(filename);
+    return new File(url.toURI());
+  }
+
+  @Test
+  public void testHeaderInclusion(){
+    val sampleSheetFile = getTestFile(TEST_SAMPLE_SHEET_FILENAME);
+    val uuid2BarcodeSheetFile = getTestFile(TEST_UUID2BARCODE_SHEET_FILENAME);
+    assertThat(sampleSheetFile).exists();
+    assertThat(uuid2BarcodeSheetFile).exists();
+    val absSampleSheetFilename = sampleSheetFile.getAbsolutePath();
+    val absUuid2BarcodeSheetFilename = uuid2BarcodeSheetFile.getAbsolutePath();
+
+    FileSampleMetadataDAO fileSampleMetadataDAO = newFileSampleMetadataDAO(absSampleSheetFilename,true, absUuid2BarcodeSheetFilename, true );
+    assertThat(fileSampleMetadataDAO.getSampleSheetSize()).isEqualTo(2);
+    assertThat(fileSampleMetadataDAO.getUUID2BarcodeSheetSize()).isEqualTo(2);
+
+    fileSampleMetadataDAO = newFileSampleMetadataDAO(absSampleSheetFilename,true, absUuid2BarcodeSheetFilename, false );
+    assertThat(fileSampleMetadataDAO.getSampleSheetSize()).isEqualTo(2);
+    assertThat(fileSampleMetadataDAO.getUUID2BarcodeSheetSize()).isEqualTo(3);
+
+    fileSampleMetadataDAO = newFileSampleMetadataDAO(absSampleSheetFilename,false, absUuid2BarcodeSheetFilename, true );
+    assertThat(fileSampleMetadataDAO.getSampleSheetSize()).isEqualTo(3);
+    assertThat(fileSampleMetadataDAO.getUUID2BarcodeSheetSize()).isEqualTo(2);
+
+    fileSampleMetadataDAO = newFileSampleMetadataDAO(absSampleSheetFilename,false, absUuid2BarcodeSheetFilename, false );
+    assertThat(fileSampleMetadataDAO.getSampleSheetSize()).isEqualTo(3);
+    assertThat(fileSampleMetadataDAO.getUUID2BarcodeSheetSize()).isEqualTo(3);
   }
 
   @Test
