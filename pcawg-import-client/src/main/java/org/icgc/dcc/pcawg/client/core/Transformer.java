@@ -8,7 +8,6 @@ import lombok.val;
 import org.icgc.dcc.pcawg.client.tsv.TSVConverter;
 
 import java.io.Closeable;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
@@ -16,9 +15,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.icgc.dcc.common.core.util.Joiners.PATH;
+import static org.icgc.dcc.pcawg.client.core.HdfsFileWriter.newHdfsFileWriter;
+import static org.icgc.dcc.pcawg.client.core.LocalFileWriter.newLocalFileWriter;
 
 @Slf4j
 public class Transformer<T> implements Closeable{
+  private static final boolean CREATE_DIRECTORY_IF_DNE = true;
 
   private final TSVConverter<T> tsvConverter;
 
@@ -48,7 +50,7 @@ public class Transformer<T> implements Closeable{
     val appendMode = !createNewFile;
     val doesFileExist = checkIfFileExists(outputFilename);
     val writeHeaderLineInitially =  shouldWriteHeader(createNewFile, doesFileExist);
-    val writer = new FileWriter(outputFilename, appendMode);
+    val writer = newLocalFileWriter(outputFilename, appendMode, CREATE_DIRECTORY_IF_DNE);
     return newTransformer(tsvConverter, writer, writeHeaderLineInitially);
   }
 
@@ -64,7 +66,7 @@ public class Transformer<T> implements Closeable{
       final boolean createNewFile){
     val outputFilename = getOutputFileName(outputDirectory, dccProjectCode, outputTsvFilename);
     val appendMode = !createNewFile;
-    val hdfsFileWriter= new HdfsFileWriter(hostname, port, outputFilename, appendMode);
+    val hdfsFileWriter= newHdfsFileWriter(hostname, port, outputFilename, appendMode, CREATE_DIRECTORY_IF_DNE);
     val doesFileExist = hdfsFileWriter.isFileExistedPreviously();
     val writeHeaderLineInitially =  shouldWriteHeader(createNewFile, doesFileExist);
     return newTransformer(tsvConverter, hdfsFileWriter, writeHeaderLineInitially);

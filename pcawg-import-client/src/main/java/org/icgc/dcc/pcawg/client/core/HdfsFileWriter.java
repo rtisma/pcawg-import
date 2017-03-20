@@ -1,6 +1,8 @@
 package org.icgc.dcc.pcawg.client.core;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -20,15 +22,27 @@ public class HdfsFileWriter extends Writer {
   private static final String FS_PARAM_NAME = "fs.defaultFS";
   private static final String HDFS = "hdfs";
 
+  public static HdfsFileWriter newHdfsFileWriter(String hostname, String port, String outputFilename,
+      final boolean append, final boolean createNonExistentDirectories) throws IOException {
+    return new HdfsFileWriter(hostname, port, outputFilename, append, createNonExistentDirectories);
+  }
+
   private final Writer internalWriter;
 
   @Getter
   private final boolean append;
 
   /**
+   * If set to true, when writing to a file whose parent directory doesnt exist, it will automatically create the directories, and then open the new file.
+   */
+  @Getter
+  private final boolean createNonExistantDirectories;
+
+  /**
    * State
    */
   @Getter
+  @Setter(AccessLevel.PRIVATE)
   private boolean fileExistedPreviously;
 
   private static String createUrl(String fileSystemName, String hostname, String port){
@@ -51,28 +65,20 @@ public class HdfsFileWriter extends Writer {
   //TODO: clean this up of all logs
   @SneakyThrows
   private OutputStream createNewOutputStream(FileSystem fs, Path file, boolean append){
-    log.info("FileName: {}", file.toString());
-    this.fileExistedPreviously = fs.exists(file);
-
-    if(fileExistedPreviously){
-      if (!append){
-        log.info("The file [{}] EXISTS! Deleting it ", file.toString() );
-        fs.delete(file, true);
-      } else {
-        log.info("The file [{}] EXISTS! Appending to it ", file.toString() );
-      }
-    } else {
-      log.info("The file [{}] DNE ", file.toUri().toString() );
-      val parent = file.getParent();
-      if (! fs.exists(parent)){
-        log.info("The parent dir [{}] doesnt exist, will create...  ", parent.toUri().toString() );
-        fs.mkdirs(parent);
-      }
+    val parent = file.getParent();
+    val parentDirExists = fs.exists(parent);
+    setFileExistedPreviously(fs.exists(file));
+    if (isCreateNonExistantDirectories() && ! isFileExistedPreviously() && ! parentDirExists ){
+      log.info("The parent dir [{}] doesnt exist, will create...  ", parent.toUri().toString() );
+      fs.mkdirs(parent);
     }
-    return fs.create(file);
+
+    // Cannot append to a file that doesnt exist
+    boolean chooseAppend = isFileExistedPreviously() && append;
+    return chooseAppend  ? fs.append(file) : fs.create(file);
   }
 
-  public HdfsFileWriter(String hostname, String port, String outputFilename, boolean append) throws IOException {
+  private HdfsFileWriter(String hostname, String port, String outputFilename, final boolean append, final boolean createNonExistentDirectories) throws IOException {
     val file = new Path(outputFilename);
     val hdfs = createFileSystem(hostname,port);
     log.info("Connecting to: {}", hdfs.getConf().get(FS_PARAM_NAME));
@@ -80,6 +86,7 @@ public class HdfsFileWriter extends Writer {
     val os = createNewOutputStream(hdfs, file, append);
     this.internalWriter = new BufferedWriter(new OutputStreamWriter(os));
     this.append = append;
+    this.createNonExistantDirectories = createNonExistentDirectories;
   }
 
 
