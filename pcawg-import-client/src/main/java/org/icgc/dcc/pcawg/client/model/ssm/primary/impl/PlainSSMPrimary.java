@@ -12,11 +12,11 @@ public class PlainSSMPrimary implements SSMPrimary {
  @NonNull private final String   analysisId;
  @NonNull private final String   analyzedSampleId;
  @NonNull private final String   mutationType;
- @NonNull private final boolean  pcawgFlag;
+          private final boolean  pcawgFlag;
  @NonNull private final String   chromosome;
- @NonNull private final int      chromosomeStart;
- @NonNull private final int      chromosomeEnd;
- @NonNull private final int      chromosomeStrand;
+          private final int      chromosomeStart;
+          private final int      chromosomeEnd;
+          private final int      chromosomeStrand;
  @NonNull private final String   referenceGenomeAllele;
  @NonNull private final String   controlGenotype;
  @NonNull private final String   mutatedFromAllele;
@@ -25,8 +25,8 @@ public class PlainSSMPrimary implements SSMPrimary {
  @NonNull private final String   expressedAllele;
  @NonNull private final String   qualityScore;
  @NonNull private final String   probability;
- @NonNull private final int      totalReadCount;
- @NonNull private final int      mutantAlleleReadCount;
+          private final int      totalReadCount;
+          private final int      mutantAlleleReadCount;
  @NonNull private final String   verificationStatus;
  @NonNull private final String   verificationPlatform;
  @NonNull private final String   biologicalValidationStatus;

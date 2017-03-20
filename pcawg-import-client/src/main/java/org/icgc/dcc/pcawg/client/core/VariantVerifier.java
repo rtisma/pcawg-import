@@ -66,11 +66,13 @@ public class VariantVerifier implements Iterable<VariantVerifier.VariantStatus> 
 
     @NonNull
     private final String filename;
+
     @NonNull
     private final VCFFileReader vcfFileReader;
+
     @NonNull
     private final VariantContext variantContext;
-    @NonNull
+
     private final long lineNumber;
 
     private Set<SSMPrimaryErrors> primaryErrors = Sets.newHashSet();

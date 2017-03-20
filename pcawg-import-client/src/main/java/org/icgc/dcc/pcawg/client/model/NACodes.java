@@ -1,6 +1,5 @@
 package org.icgc.dcc.pcawg.client.model;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -10,7 +9,6 @@ public enum NACodes {
   UNEXPECTED_DATA(-777),
   CORRUPTED_DATA(-777);
 
-  @NonNull
   private final int code;
 
   public String toString(){

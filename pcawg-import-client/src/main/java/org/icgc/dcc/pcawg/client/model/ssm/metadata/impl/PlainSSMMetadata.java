@@ -11,7 +11,7 @@ public class PlainSSMMetadata implements SSMMetadata {
 
   @NonNull private final String   analysisId;
   @NonNull private final String   analyzedSampleId;
-  @NonNull private final boolean  pcawgFlag;
+           private final boolean  pcawgFlag;
   @NonNull private final String matchedSampleId;
   @NonNull private final String assemblyVersion;
   @NonNull private final String platform;
