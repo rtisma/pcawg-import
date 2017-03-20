@@ -1,6 +1,8 @@
 package org.icgc.dcc.pcawg.client.core;
 
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO;
@@ -13,25 +15,25 @@ import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.SSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.metadata.impl.PcawgSSMMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
+import org.icgc.dcc.pcawg.client.tsv.TSVConverter;
 import org.icgc.dcc.pcawg.client.tsv.impl.SSMMetadataTSVConverter;
 import org.icgc.dcc.pcawg.client.tsv.impl.SSMPrimaryTSVConverter;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
+import java.io.IOException;
 import java.nio.file.Paths;
 
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SAMPLE_SHEET_TSV_URL;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_P_TSV_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_BYPASS_MD5_CHECK;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_OUTPUT_VCF_STORAGE_DIR;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_PERSIST_MODE;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.TOKEN;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.UUID2BARCODE_SHEET_TSV_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.UUID2BARCODE_SHEET_TSV_URL;
-import static org.icgc.dcc.pcawg.client.core.Transformer.newHdfsTransformer;
-import static org.icgc.dcc.pcawg.client.core.Transformer.newLocalFileTransformer;
+import static org.icgc.dcc.pcawg.client.core.LocalFileWriter.newDefaultLocalFileWriter;
+import static org.icgc.dcc.pcawg.client.core.Transformer.newTransformer;
 import static org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO.newFileSampleMetadataDAO;
 import static org.icgc.dcc.pcawg.client.download.PortalQueryCreator.newPcawgQueryCreator;
 import static org.icgc.dcc.pcawg.client.download.Storage.downloadFileByURL;
@@ -41,6 +43,8 @@ import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
 @NoArgsConstructor(access = PRIVATE)
 @Slf4j
 public class Factory {
+
+  private static final boolean CREATE_DIRECTORY_IF_DNE = true;
 
   public static Storage newDefaultStorage() {
     log.info("Creating storage instance with persistMode: {}, outputDir: {}, and md5BypassEnable: {}",
@@ -81,36 +85,25 @@ public class Factory {
         sampleMetadata.getAliquotId() );
   }
 
-  public static Transformer<SSMMetadata> newSSMMetadataTransformer(String dccProjectCode,
-      String outputTsvDir, final boolean useHdfs,
-      String hostname, String port, final boolean createNewFile){
-    log.info("Creating SSMMetadata Transformer for DccProjectCode [{}]", dccProjectCode);
-    if (useHdfs){
-      log.info("Using HDFS SSMMetadata transformer");
-      return newHdfsTransformer(outputTsvDir,
-          dccProjectCode, SSM_M_TSV_FILENAME, new SSMMetadataTSVConverter(),
-          hostname, port, createNewFile);
 
+  private static <T> Transformer<T> newFilesystemTransformer(FileWriterContext context, TSVConverter<T> tsvConverter, final boolean useHdfs){
+    if (useHdfs){
+      log.info("Using HDFS transformer");
+      return newHdfsTransformer( tsvConverter, context );
     } else {
-      log.info("Using LOCAL SSMMetadata transformer");
-      return newLocalFileTransformer(outputTsvDir,
-          dccProjectCode, SSM_M_TSV_FILENAME, new SSMMetadataTSVConverter(), createNewFile);
+      log.info("Using LOCAL transformer");
+      return newLocalFileTransformer(tsvConverter, context);
     }
   }
-  public static Transformer<SSMPrimary> newSSMPrimaryTransformer(String dccProjectCode,
-      String outputTsvDir, final boolean useHdfs,
-      String hostname, String port, final boolean createNewFile){
-    log.info("Creating SSMPrimary Transformer for DccProjectCode [{}]", dccProjectCode);
-    if (useHdfs){
-      log.info("Using HDFS SSMPrimary transformer");
-      return newHdfsTransformer(outputTsvDir,
-          dccProjectCode, SSM_P_TSV_FILENAME, new SSMPrimaryTSVConverter(),
-          hostname, port, createNewFile);
-    } else {
-      log.info("Using LOCAL SSMPrimary transformer");
-      return newLocalFileTransformer(outputTsvDir,
-          dccProjectCode, SSM_P_TSV_FILENAME, new SSMPrimaryTSVConverter(), createNewFile);
-    }
+
+  public static Transformer<SSMPrimary> newSSMPrimaryTransformer(FileWriterContext context, final boolean useHdfs){
+    log.info("Creating SSMPrimary Transformer for DccProjectCode [{}]", context.getDccProjectCode());
+    return newFilesystemTransformer(context, new SSMPrimaryTSVConverter(), useHdfs);
+  }
+
+  public static Transformer<SSMMetadata> newSSMMetadataTransformer(FileWriterContext context, final boolean useHdfs){
+    log.info("Creating SSMMetadata Transformer for DccProjectCode [{}]", context.getDccProjectCode());
+    return newFilesystemTransformer(context, new SSMMetadataTSVConverter(), useHdfs);
   }
 
   private static FileSampleMetadataDAO newFileSampleMetadataDAOAndDownload(){
@@ -134,5 +127,39 @@ public class Factory {
 
   public static SampleMetadataDAO newSampleMetadataDAO(){
     return newFileSampleMetadataDAOAndDownload();
+  }
+
+  @SneakyThrows
+  public static <T> Transformer<T> newLocalFileTransformer(
+    @NonNull TSVConverter<T> tsvConverter,
+    @NonNull FileWriterContext context){
+    val appendMode = context.isAppend();
+    val localFileWriter = createDefaultLocalFileWriter(context);
+    val doesFileExist = localFileWriter.isFileExistedPreviously();
+    val writeHeaderLineInitially =  ! appendMode || !doesFileExist;
+    return newTransformer(tsvConverter, localFileWriter, writeHeaderLineInitially);
+  }
+
+  @SneakyThrows
+  public static <T> Transformer<T> newHdfsTransformer(
+      @NonNull TSVConverter<T> tsvConverter,
+      @NonNull FileWriterContext context){
+    val appendMode = context.isAppend();
+    val hdfsFileWriter= createHdfsFileWriter(context);
+    val doesFileExist = hdfsFileWriter.isFileExistedPreviously();
+    val writeHeaderLineInitially =  ! appendMode || !doesFileExist;
+    return newTransformer(tsvConverter, hdfsFileWriter, writeHeaderLineInitially);
+  }
+
+  public static LocalFileWriter createDefaultLocalFileWriter(FileWriterContext context) throws IOException {
+    return newDefaultLocalFileWriter(context.getOutputFilename(),
+        context.isAppend());
+  }
+
+  public static HdfsFileWriter createHdfsFileWriter(FileWriterContext context) throws IOException {
+    return HdfsFileWriter.newDefaultHdfsFileWriter(context.getHostname(),
+        context.getPort(),
+        context.getOutputFilename(),
+        context.isAppend() );
   }
 }

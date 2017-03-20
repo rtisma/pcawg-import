@@ -22,7 +22,7 @@ public class HDFSWriterTest {
     val append = true;
     val outputFilename = start+filename;
     System.out.println("outputFilename: "+outputFilename);
-    val writer = new HdfsFileWriter(hostname, port, outputFilename, append);
+    val writer = HdfsFileWriter.newDefaultHdfsFileWriter(hostname, port, outputFilename, append);
       System.out.println("writing");
       writer.write("hello this is rob");
   }

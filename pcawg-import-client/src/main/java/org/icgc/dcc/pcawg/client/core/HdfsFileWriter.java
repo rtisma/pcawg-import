@@ -21,10 +21,16 @@ public class HdfsFileWriter extends Writer {
 
   private static final String FS_PARAM_NAME = "fs.defaultFS";
   private static final String HDFS = "hdfs";
+  private static final boolean DEFAULT_CREATE_DIRS_IF_DNE = true;
 
   public static HdfsFileWriter newHdfsFileWriter(String hostname, String port, String outputFilename,
       final boolean append, final boolean createNonExistentDirectories) throws IOException {
     return new HdfsFileWriter(hostname, port, outputFilename, append, createNonExistentDirectories);
+  }
+
+  public static HdfsFileWriter newDefaultHdfsFileWriter(String hostname, String port, String outputFilename,
+      final boolean append) throws IOException {
+    return newHdfsFileWriter(hostname, port, outputFilename, append, DEFAULT_CREATE_DIRS_IF_DNE);
   }
 
   private final Writer internalWriter;

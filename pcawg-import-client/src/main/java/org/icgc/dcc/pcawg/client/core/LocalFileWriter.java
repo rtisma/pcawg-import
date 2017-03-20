@@ -15,9 +15,15 @@ import java.nio.file.Paths;
  */
 public class LocalFileWriter extends FileWriter {
 
+  private static final boolean CREATE_DIRS_IF_DNE = true;
+
   public static LocalFileWriter newLocalFileWriter(String filename, boolean append, boolean createNonExistentDirectories) throws IOException{
     val fileAlreadyExists= Paths.get(filename).toFile().exists();
     return new LocalFileWriter(filename, append, createNonExistentDirectories, fileAlreadyExists);
+  }
+
+  public static LocalFileWriter newDefaultLocalFileWriter(String filename, boolean append) throws IOException{
+    return newLocalFileWriter(filename, append, CREATE_DIRS_IF_DNE);
   }
 
   @Getter

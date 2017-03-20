@@ -23,10 +23,13 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.icgc.dcc.pcawg.client.core.FileWriterContext;
 import org.icgc.dcc.pcawg.client.download.Storage;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.SnvMnvPcawgSSMPrimary;
 
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_P_TSV_FILENAME;
 import static org.icgc.dcc.pcawg.client.core.Factory.newMetadataContainer;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadata;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadataTransformer;
@@ -59,30 +62,67 @@ public class Importer implements Runnable {
 
   private final boolean append;
 
+  private FileWriterContext.FileWriterContextBuilder createFileWriterContextBuilder(String dccProjectCode){
+    return FileWriterContext.builder()
+        .dccProjectCode(dccProjectCode)
+        .outputDirectory(outputTsvDir)
+        .hostname(hdfsHostname)
+        .port(hdfsPort)
+        .append(append);
+  }
+  private FileWriterContext createSSMPrimaryFileWriterContext(String dccProjectCode){
+    return createFileWriterContextBuilder(dccProjectCode)
+        .outputTsvFilename(SSM_P_TSV_FILENAME)
+        .build();
+  }
+
+  private FileWriterContext createSSMMetadataFileWriterContext(String dccProjectCode){
+    return createFileWriterContextBuilder(dccProjectCode)
+        .outputTsvFilename(SSM_M_TSV_FILENAME)
+        .build();
+  }
+
   @Override
   @SneakyThrows
   public void run() {
+    // Create container with all MetadataContexts
     val metadataContainer = newMetadataContainer();
+
+    // Create storage manager for downloading files
     val storage = Storage.newStorage(persistVcfDownloads, outputVcfDir, bypassMD5Check, token);
+
     val totalMetadataContexts = metadataContainer.getTotalMetadataContexts();
     int countMetadataContexts = 0;
+
     val totalDccProjectCodes = metadataContainer.getDccProjectCodes().size();
     int countDccProjectCodes  = 0;
-    val createNewFile = !append;
+
     for (val dccProjectCode : metadataContainer.getDccProjectCodes()){
       log.info("Processing DccProjectCode ( {} / {} ): {}", ++countDccProjectCodes, totalDccProjectCodes, dccProjectCode);
-      val ssmPrimaryTransformer  = newSSMPrimaryTransformer(dccProjectCode,
-          outputTsvDir, hdfsEnabled, hdfsHostname, hdfsPort, createNewFile);
-      val ssmMetadataTransformer = newSSMMetadataTransformer(dccProjectCode,
-          outputTsvDir, hdfsEnabled, hdfsHostname, hdfsPort, createNewFile);
+
+      //Create FileWriterContexts for this dccProjectCode
+      val ssmPrimaryFileWriterContext = createSSMPrimaryFileWriterContext(dccProjectCode);
+      val ssmMetadataFileWriterContext = createSSMMetadataFileWriterContext(dccProjectCode);
+
+      //Create transformers for this dccProjectCode
+      val ssmPrimaryTransformer  = newSSMPrimaryTransformer(ssmPrimaryFileWriterContext, hdfsEnabled);
+      val ssmMetadataTransformer = newSSMMetadataTransformer(ssmMetadataFileWriterContext,hdfsEnabled);
+
       for (val metadataContext : metadataContainer.getMetadataContexts(dccProjectCode)){
         val sampleMetadata = metadataContext.getSampleMetadata();
         val portalMetadata = metadataContext.getPortalMetadata();
+
+        // Download file
         val file = storage.downloadFile(portalMetadata);
+
         val dataType = sampleMetadata.getDataType();
         log.info("Loading File ( {} / {} ): {}", ++countMetadataContexts, totalMetadataContexts, portalMetadata.getPortalFilename().getFilename());
+
+        //Write SSM Metadata to file
         val ssmMetadata = newSSMMetadata(sampleMetadata);
         ssmMetadataTransformer.transform(ssmMetadata);
+
+        // Write SSM Primary to file
         val vcf = new VCFFileReader(file, REQUIRE_INDEX_CFG);
         for (val variant : vcf){
           SSMPrimary ssmPrimary = null;
