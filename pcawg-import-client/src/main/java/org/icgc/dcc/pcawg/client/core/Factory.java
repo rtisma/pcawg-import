@@ -32,6 +32,7 @@ import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_PERSIST_
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.TOKEN;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.UUID2BARCODE_SHEET_TSV_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.UUID2BARCODE_SHEET_TSV_URL;
+import static org.icgc.dcc.pcawg.client.core.HdfsFileWriter.newDefaultHdfsFileWriter;
 import static org.icgc.dcc.pcawg.client.core.LocalFileWriter.newDefaultLocalFileWriter;
 import static org.icgc.dcc.pcawg.client.core.Transformer.newTransformer;
 import static org.icgc.dcc.pcawg.client.data.FileSampleMetadataDAO.newFileSampleMetadataDAO;
@@ -157,7 +158,7 @@ public class Factory {
   }
 
   public static HdfsFileWriter createHdfsFileWriter(FileWriterContext context) throws IOException {
-    return HdfsFileWriter.newDefaultHdfsFileWriter(context.getHostname(),
+    return newDefaultHdfsFileWriter(context.getHostname(),
         context.getPort(),
         context.getOutputFilename(),
         context.isAppend() );
