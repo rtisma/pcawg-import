@@ -27,6 +27,7 @@ import org.icgc.dcc.pcawg.client.core.FileWriterContext;
 import org.icgc.dcc.pcawg.client.download.Storage;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.SnvMnvPcawgSSMPrimary;
+import org.icgc.dcc.pcawg.client.vcf.DataTypes;
 
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_P_TSV_FILENAME;
@@ -116,6 +117,7 @@ public class Importer implements Runnable {
         val file = storage.downloadFile(portalMetadata);
 
         val dataType = sampleMetadata.getDataType();
+
         log.info("Loading File ( {} / {} ): {}", ++countMetadataContexts, totalMetadataContexts, portalMetadata.getPortalFilename().getFilename());
 
         //Write SSM Metadata to file
@@ -127,18 +129,18 @@ public class Importer implements Runnable {
         for (val variant : vcf){
           SSMPrimary ssmPrimary = null;
           //TODO: clean up this hardcoding. Create VCF class that does this conversion and processing, and ecapsulated this logic
-            if (dataType.toLowerCase().contains("indel")){
+            if (dataType == DataTypes.INDEL){
               ssmPrimary = newIndelSSMPrimary(
                           variant,
                           sampleMetadata.getAnalysisId(),
                           sampleMetadata.getAnalyzedSampleId());
-            } else if(dataType.toLowerCase().contains("snv_mnv")){
+            } else if(dataType == DataTypes.SNV_MNV){
               ssmPrimary = SnvMnvPcawgSSMPrimary.newSnvMnvSSMPrimary(
                   variant,
                   sampleMetadata.getAnalysisId(),
                   sampleMetadata.getAnalyzedSampleId());
             } else {
-              throw new IllegalStateException("The dataType "+dataType+" is unrecognized");
+              throw new IllegalStateException("The dataType "+dataType.getName()+" is unrecognized");
             }
           ssmPrimaryTransformer.transform(ssmPrimary);
         }
