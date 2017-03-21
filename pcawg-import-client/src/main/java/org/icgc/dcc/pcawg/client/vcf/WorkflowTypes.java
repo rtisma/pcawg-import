@@ -17,39 +17,55 @@
  */
 package org.icgc.dcc.pcawg.client.vcf;
 
-import com.google.common.collect.ImmutableSet;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 import java.util.Set;
+
+import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
+import static org.icgc.dcc.common.core.util.stream.Streams.stream;
 
 @RequiredArgsConstructor
 @Getter
 public enum WorkflowTypes {
 
-  CONSENSUS("consensus", ImmutableSet.of(" PCAWG SNV-MNV callers", "PCAWG InDel callers")),
-  SANGER("sanger", ImmutableSet.of("Sanger variant call pipeline")),
-  DKFZ_EMBL("dkfz/embl", ImmutableSet.of("DKFZ/EMBL variant call pipeline")),
-  BROAD("broad", ImmutableSet.of("Broad variant call pipeline")),
-  MUSE("muse", ImmutableSet.of("MUSE variant call pipeline") );
+  CONSENSUS("consensus", set(" PCAWG SNV-MNV callers", "PCAWG InDel callers")),
+  SANGER("sanger", set("Sanger variant call pipeline")),
+  DKFZ_EMBL("dkfz", set("DKFZ/EMBL variant call pipeline")),
+  BROAD("broad", set("Broad variant call pipeline")),
+  MUSE("muse", set("MUSE variant call pipeline") );
+
+  private static Set<String> set(String ... strings){
+    return stream(strings).collect(toImmutableSet());
+  }
 
   @NonNull
-  private String realName;
+  private final String name;
 
   @NonNull
-  private Set<String> portalSoftwareNames;
+  private final Set<String> portalSoftwareNames;
 
   public boolean equals(@NonNull final String name) {
-    return getRealName().equals(name);
+    return this.getName().equals(name);
   }
 
   public boolean isIn(@NonNull final String name) {
-    return name.matches("^" + getRealName() + ".*");
+    return name.matches("^" + this.getName() + ".*");
+  }
+
+  public static WorkflowTypes parseString(String name){
+    for (val v : values()){
+      if (v.equals(name)){
+        return v;
+      }
+    }
+    throw new IllegalStateException(String.format("The name [%s] does exist in %s", name, WorkflowTypes.class.getName()));
   }
 
   @Override
   public String toString() {
-    return getRealName();
+    return this.getName();
   }
 }

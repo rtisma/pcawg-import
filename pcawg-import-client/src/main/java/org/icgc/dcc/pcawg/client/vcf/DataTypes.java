@@ -17,8 +17,10 @@
  */
 package org.icgc.dcc.pcawg.client.vcf;
 
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 
 @RequiredArgsConstructor
 public enum DataTypes {
@@ -26,11 +28,25 @@ public enum DataTypes {
   SNV_MNV("snv_mnv");
 
   @NonNull
+  @Getter
   private final String name;
+
+  public boolean equals(String name){
+    return this.name.equals(name);
+  }
+
+  public static DataTypes parseString(String name){
+    for (val v : values()){
+      if (v.equals(name)){
+        return v;
+      }
+    }
+    throw new IllegalStateException(String.format("The name [%s] does exist in %s", name, DataTypes.class.getName()));
+  }
 
   @Override
   public String toString() {
-    return name();
+    return getName();
   }
 
 }

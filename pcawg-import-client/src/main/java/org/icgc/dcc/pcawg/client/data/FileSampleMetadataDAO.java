@@ -10,6 +10,8 @@ import org.icgc.dcc.pcawg.client.model.metadata.file.PortalFilename;
 import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
 import org.icgc.dcc.pcawg.client.model.metadata.project.SampleSheetModel;
 import org.icgc.dcc.pcawg.client.model.metadata.project.Uuid2BarcodeSheetModel;
+import org.icgc.dcc.pcawg.client.vcf.DataTypes;
+import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -112,8 +114,8 @@ public class FileSampleMetadataDAO implements SampleMetadataDAO {
   @Override
   public SampleMetadata fetchSampleMetadata(PortalFilename portalFilename){
     val aliquotId = portalFilename.getAliquotId();
-    val workflow =  portalFilename.getWorkflow();
-    val dataType =  portalFilename.getDataType();
+    val workflowType = WorkflowTypes.parseString(portalFilename.getWorkflow());
+    val dataType = DataTypes.parseString(portalFilename.getDataType());
     val sampleSheetByAliquotId = getFirstSampleSheet(aliquotId);
     val dccProjectCode = sampleSheetByAliquotId.getDccProjectCode();
     val submitterSampleId = sampleSheetByAliquotId.getSubmitterSampleId();
@@ -129,7 +131,7 @@ public class FileSampleMetadataDAO implements SampleMetadataDAO {
         .aliquotId(aliquotId)
         .isUsProject(isUsProject)
         .dataType(dataType)
-        .workflow(workflow)
+        .workflowType(workflowType)
         .build();
   }
 

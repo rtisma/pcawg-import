@@ -3,6 +3,8 @@ package org.icgc.dcc.pcawg.client.model.metadata.project;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.icgc.dcc.pcawg.client.vcf.DataTypes;
+import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
 import static org.icgc.dcc.common.core.util.Joiners.UNDERSCORE;
 
@@ -14,10 +16,10 @@ public class SampleMetadata {
   private final String aliquotId;
 
   @NonNull
-  private final String workflow;
+  private final WorkflowTypes workflowType;
 
   @NonNull
-  private final String dataType;
+  private final DataTypes dataType;
 
   private final boolean isUsProject;
 
@@ -31,7 +33,8 @@ public class SampleMetadata {
   private final String matchedSampleId;
 
   public String getAnalysisId(){
-    return UNDERSCORE.join(dccProjectCode, workflow,dataType);
+    return UNDERSCORE.join(dccProjectCode, workflowType,dataType);
   }
+
 
 }

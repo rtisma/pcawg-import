@@ -80,7 +80,8 @@ public class Factory {
 
   public static SSMMetadata newSSMMetadata(SampleMetadata sampleMetadata){
     return PcawgSSMMetadata.newSSMMetadataImpl(
-        sampleMetadata.getWorkflow(),
+        sampleMetadata.getWorkflowType().getName(),
+        sampleMetadata.getDataType().getName(),
         sampleMetadata.getMatchedSampleId(),
         sampleMetadata.getAnalysisId(),
         sampleMetadata.getAnalyzedSampleId(),
