@@ -36,5 +36,4 @@ public class SampleMetadata {
     return UNDERSCORE.join(dccProjectCode, workflowType,dataType);
   }
 
-
 }
