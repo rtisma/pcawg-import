@@ -74,19 +74,24 @@ public class ConsensusVCFConverter {
 
   public void process(File vcfFile, SampleMetadata sampleMetadata){
     checkArgument(sampleMetadata.getWorkflowType() == CONSENSUS,
-        "This method can only process vcf file of workflow type [%s]", CONSENSUS.getName());
+        "This method can only process vcf files of workflow type [%s]", CONSENSUS.getName());
     val dccProjectCode = sampleMetadata.getDccProjectCode();
+
+    // Initialize transformer maps for primary and metadata
     buildTransformerMaps(dccProjectCode);
 
     //Write SSM Metadata to file
     val ssmMetadataConsensus = newSSMMetadata(sampleMetadata);
     getSSMMetadataTransformer(CONSENSUS).transform(ssmMetadataConsensus);
 
+    // Write SSM Primary to file
     val vcf = new VCFFileReader(vcfFile, REQUIRE_INDEX_CFG);
     for (val variant : vcf){
       val ssmPrimary = buildSSMPrimary(sampleMetadata, variant);
       getSSMPrimaryTransformer(CONSENSUS).transform(ssmPrimary);
     }
+
+    // Close transformers and release memory
     closeAllMetadataTransformers();
     closeAllPrimaryTransformers();
   }
@@ -104,9 +109,9 @@ public class ConsensusVCFConverter {
   private void buildTransformerMaps(String dccProjectCode){
     primaryTransformerMap = newEnumMap(WorkflowTypes.class);
     metadataTransformerMap = newEnumMap(WorkflowTypes.class);
-    for (val w : WorkflowTypes.values()){
-      primaryTransformerMap.put(w,  buildSSMPrimaryTransformer(w, dccProjectCode) );
-      metadataTransformerMap.put(w, buildSSMMetadataTransformer(w, dccProjectCode) );
+    for (val workflowType : WorkflowTypes.values()){
+      primaryTransformerMap.put( workflowType, buildSSMPrimaryTransformer(workflowType, dccProjectCode) );
+      metadataTransformerMap.put(workflowType, buildSSMMetadataTransformer(workflowType, dccProjectCode) );
     }
   }
 
