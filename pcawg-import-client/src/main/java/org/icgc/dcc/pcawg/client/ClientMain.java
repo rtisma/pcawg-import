@@ -56,8 +56,6 @@ public class ClientMain implements CommandLineRunner {
 
   }
 
-
-
   public static void main(String... args) {
     new SpringApplicationBuilder(ClientMain.class)
         .addCommandLineProperties(true)
