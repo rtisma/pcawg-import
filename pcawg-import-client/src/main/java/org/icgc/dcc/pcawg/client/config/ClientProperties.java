@@ -51,5 +51,4 @@ public class ClientProperties {
   public static final String SSM_M_TSV_FILENAME_PREFIX = "ssm_m";
   public static final String SSM_M_TSV_FILENAME_EXTENSION = "txt";
 
-
 }

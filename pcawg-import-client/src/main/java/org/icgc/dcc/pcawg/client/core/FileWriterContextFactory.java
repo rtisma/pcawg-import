@@ -1,9 +1,7 @@
-package org.icgc.dcc.pcawg.client;
+package org.icgc.dcc.pcawg.client.core;
 
 import lombok.Builder;
 import lombok.NonNull;
-import org.icgc.dcc.pcawg.client.core.FileWriterContext;
-import org.icgc.dcc.pcawg.client.core.FileWriterContextPojo;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
 import static org.icgc.dcc.common.core.util.Joiners.DOT;
