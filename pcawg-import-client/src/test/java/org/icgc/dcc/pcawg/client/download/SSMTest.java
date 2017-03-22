@@ -20,6 +20,7 @@ import org.junit.Test;
 import java.io.File;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.icgc.dcc.common.core.util.Joiners.UNDERSCORE;
 import static org.icgc.dcc.pcawg.client.model.ssm.primary.impl.IndelPcawgSSMPrimary.newIndelSSMPrimary;
 import static org.icgc.dcc.pcawg.client.model.ssm.primary.impl.SnvMnvPcawgSSMPrimary.newSnvMnvSSMPrimary;
 
@@ -41,7 +42,9 @@ public class SSMTest {
       "multiple base substitution (>=2bp and <=200bp)";
 
   private static final WorkflowTypes FIXED_CONSENSUS_WORKFLOW = WorkflowTypes.CONSENSUS;
-  private static final String DUMMY_ANALYSIS_ID = "myDccProjectCode_"+FIXED_CONSENSUS_WORKFLOW.getName()+"_myDataType";
+  private static final DataTypes FIXED_INDEL_DATATYPE = DataTypes.INDEL;
+  private static final String DUMMY_ANALYSIS_ID = UNDERSCORE.join("myDccProjectCode",
+      FIXED_CONSENSUS_WORKFLOW.getName(), FIXED_INDEL_DATATYPE.getName());
   private static final String DUMMY_ANALYZED_SAMPLE_ID = "myAnalyzedSampleId";
   private static final String DUMMY_MATCHED_SAMPLE_ID = "myMatchedSampleId";
 

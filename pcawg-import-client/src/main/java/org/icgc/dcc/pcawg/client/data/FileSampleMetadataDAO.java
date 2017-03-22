@@ -29,6 +29,7 @@ public class FileSampleMetadataDAO implements SampleMetadataDAO {
   private static final String WGS = "WGS";
   private static final String NORMAL = "normal";
   private static final boolean F_CHECK_CORRECT_WORKTYPE = true;
+  private static final boolean F_CHECK_CORRECT_DATATYPE = true;
 
   public static FileSampleMetadataDAO newFileSampleMetadataDAO(String sampleSheetFilename, boolean sampleSheetHasHeader,
       String uuid2BarcodeSheetFilename, boolean uuid2BarcodeSheetHasHeader){
@@ -115,8 +116,8 @@ public class FileSampleMetadataDAO implements SampleMetadataDAO {
   @Override
   public SampleMetadata fetchSampleMetadata(PortalFilename portalFilename){
     val aliquotId = portalFilename.getAliquotId();
-    val workflowType = WorkflowTypes.parseMatch(portalFilename.getWorkflow(), F_CHECK_CORRECT_WORKTYPE);
-    val dataType = DataTypes.parseString(portalFilename.getDataType());
+    val workflowType = WorkflowTypes.parseStartsWith(portalFilename.getWorkflow(), F_CHECK_CORRECT_WORKTYPE);
+    val dataType = DataTypes.parseMatch(portalFilename.getDataType(), F_CHECK_CORRECT_DATATYPE);
     val sampleSheetByAliquotId = getFirstSampleSheet(aliquotId);
     val dccProjectCode = sampleSheetByAliquotId.getDccProjectCode();
     val submitterSampleId = sampleSheetByAliquotId.getSubmitterSampleId();
