@@ -23,18 +23,15 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.PlainFileWriterContext;
-import org.icgc.dcc.pcawg.client.core.PlainFileWriterContext.PlainFileWriterContextBuilder;
 import org.icgc.dcc.pcawg.client.download.Storage;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.SnvMnvPcawgSSMPrimary;
 import org.icgc.dcc.pcawg.client.vcf.DataTypes;
-import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME_PREFIX;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME_EXTENSION;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_P_TSV_FILENAME_PREFIX;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME_PREFIX;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_P_TSV_FILENAME_EXTENSION;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_P_TSV_FILENAME_PREFIX;
 import static org.icgc.dcc.pcawg.client.core.Factory.newMetadataContainer;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadata;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadataTransformerFactory;
@@ -70,34 +67,36 @@ public class Importer implements Runnable {
 
   // 1. now need to remove these members, and just make ssm_type_enum (with SSM_M and SMM_P), and then this method
 
-  private PlainFileWriterContextBuilder createPlainFileWriterContextBuilder(WorkflowTypes workflowType, String dccProjectCode){
-    return PlainFileWriterContext.builder()
-        .dccProjectCode(dccProjectCode)
-        .workflowType(workflowType)
+  private FileWriterContextFactory buildSSMPrimaryFWCtxFactory(){
+    return FileWriterContextFactory.builder()
         .outputDirectory(outputTsvDir)
-        .hostname(hdfsHostname)
-        .port(hdfsPort)
-        .append(append);
-  }
-  private PlainFileWriterContext createSSMPrimaryFileWriterContext(WorkflowTypes workflowType, String dccProjectCode){
-    return createPlainFileWriterContextBuilder(workflowType, dccProjectCode)
         .fileNamePrefix(SSM_P_TSV_FILENAME_PREFIX)
         .fileExtension(SSM_P_TSV_FILENAME_EXTENSION)
+        .append(append)
+        .hostname(hdfsHostname)
+        .port(hdfsPort)
         .build();
   }
 
-  private PlainFileWriterContext createSSMMetadataFileWriterContext(WorkflowTypes workflowType, String dccProjectCode){
-    return createPlainFileWriterContextBuilder(workflowType, dccProjectCode)
+  private FileWriterContextFactory buildSSMMetadataFWCtxFactory(){
+    return FileWriterContextFactory.builder()
+        .outputDirectory(outputTsvDir)
         .fileNamePrefix(SSM_M_TSV_FILENAME_PREFIX)
         .fileExtension(SSM_M_TSV_FILENAME_EXTENSION)
+        .append(append)
+        .hostname(hdfsHostname)
+        .port(hdfsPort)
         .build();
   }
 
   @Override
   @SneakyThrows
   public void run() {
-    val ssmMConsensusTransformerFactory = newSSMMetadataTransformerFactory(hdfsEnabled);
-    val ssmPConsensusTransformerFactory = newSSMPrimaryTransformerFactory(hdfsEnabled);
+    val ssmMetadataTransformerFactory = newSSMMetadataTransformerFactory(hdfsEnabled);
+    val ssmMetadataFWCtxFactory = buildSSMMetadataFWCtxFactory();
+
+    val ssmPrimaryTransformerFactory = newSSMPrimaryTransformerFactory(hdfsEnabled);
+    val ssmPrimaryFWCtxFactory = buildSSMPrimaryFWCtxFactory();
 
     // Create container with all MetadataContexts
     val metadataContainer = newMetadataContainer();
@@ -114,13 +113,13 @@ public class Importer implements Runnable {
     for (val dccProjectCode : metadataContainer.getDccProjectCodes()){
       log.info("Processing DccProjectCode ( {} / {} ): {}", ++countDccProjectCodes, totalDccProjectCodes, dccProjectCode);
 
-      //Create FileWriterContexts for this dccProjectCode
-      val ssmPConsensusFWContext = createSSMPrimaryFileWriterContext(CONSENSUS,dccProjectCode);
-      val ssmMConsensusFWContext = createSSMMetadataFileWriterContext(CONSENSUS,dccProjectCode);
+      //Create Consensus FileWriterContexts for this dccProjectCode
+      val ssmPConsensusFWContext = ssmPrimaryFWCtxFactory.getFileWriterContext(CONSENSUS,dccProjectCode);
+      val ssmMConsensusFWContext = ssmMetadataFWCtxFactory.getFileWriterContext(CONSENSUS, dccProjectCode);
 
-      //Create transformers for this dccProjectCode
-      val ssmPConsensusTransformer  = ssmPConsensusTransformerFactory.getTransformer(ssmPConsensusFWContext);
-      val ssmMConsensusTransformer = ssmMConsensusTransformerFactory.getTransformer(ssmMConsensusFWContext);
+      //Create Consensus transformers for this dccProjectCode
+      val ssmPConsensusTransformer  = ssmPrimaryTransformerFactory.getTransformer(ssmPConsensusFWContext);
+      val ssmMConsensusTransformer = ssmMetadataTransformerFactory.getTransformer(ssmMConsensusFWContext);
 
       for (val metadataContext : metadataContainer.getMetadataContexts(dccProjectCode)){
         val sampleMetadata = metadataContext.getSampleMetadata();

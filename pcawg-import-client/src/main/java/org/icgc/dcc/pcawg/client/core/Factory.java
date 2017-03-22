@@ -123,4 +123,28 @@ public class Factory {
     return newFileSampleMetadataDAOAndDownload();
   }
 
+//  public static FileWriterContextFactory newSSMPrimaryFWCtxFactory(String outputDirectory,
+//      final boolean append, String hostname, String port){
+//    return FileWriterContextFactory.builder()
+//        .outputDirectory(outputDirectory)
+//        .fileNamePrefix(SSM_P_TSV_FILENAME_PREFIX)
+//        .fileExtension(SSM_P_TSV_FILENAME_EXTENSION)
+//        .append(append)
+//        .hostname(hostname)
+//        .port(port)
+//        .build();
+//  }
+//
+//  public static FileWriterContextFactory newSSMMetadataFWCtxFactory(String outputDirectory,
+//      final boolean append, String hostname, String port){
+//    return FileWriterContextFactory.builder()
+//        .outputDirectory(outputDirectory)
+//        .fileNamePrefix(SSM_M_TSV_FILENAME_PREFIX)
+//        .fileExtension(SSM_M_TSV_FILENAME_EXTENSION)
+//        .append(append)
+//        .hostname(hostname)
+//        .port(port)
+//        .build();
+//  }
+
 }
