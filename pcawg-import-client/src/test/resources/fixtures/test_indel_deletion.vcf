@@ -1,0 +1,26 @@
+##fileformat=VCFv4.1
+##ContEST=0.1
+##BAMQCStars=5
+##TumourInNormalEstimate=1.000000e-02
+##fileDate=20130101
+##reference=ftp://ftp.sanger.ac.uk/pub/project/PanCancer/genome.fa.gz
+##INFO=<ID=1000genomes_AF,Number=1,Type=Float,Description="Thousand Genomes phase 3 occurance fraction if found: ALL.wgs.phase3_shapeit2_mvncall_integrated_v5b.20130502.sites.vcf.gz">
+##INFO=<ID=1000genomes_ID,Number=1,Type=String,Description="Thousand Genomes phase 3 ID if found: ALL.wgs.phase3_shapeit2_mvncall_integrated_v5b.20130502.sites.vcf.gz">
+##INFO=<ID=Callers,Number=.,Type=String,Description="Callers that made this call">
+##INFO=<ID=NumCallers,Number=1,Type=Integer,Description="Number of callers that made this call">
+##INFO=<ID=cosmic,Number=1,Type=String,Description="(first) cosmic ID if found, COSMICv76">
+##INFO=<ID=dbsnp,Number=1,Type=String,Description="(first) dbSNP ID if found, build 147, All_20160408.vcf.gz">
+##INFO=<ID=repeat_masker,Number=1,Type=String,Description="Repeat masker region if in one">
+##INFO=<ID=dbsnp_somatic,Number=.,Type=Flag,Description="Known-somatic dbSNP variant">
+##INFO=<ID=VAF,Number=1,Type=Float,Description="VAF in tumor from sga">
+##INFO=<ID=n_vaf,Number=1,Type=Float,Description="VAF in normal from sga">
+##INFO=<ID=t_alt_count,Number=1,Type=Integer,Description="Tumor alt count from sga">
+##INFO=<ID=t_ref_count,Number=1,Type=Integer,Description="Tumor ref count from sga if non-zero">
+##INFO=<ID=n_alt_count,Number=1,Type=Integer,Description="Normal alt count from sga if non-zero">
+##INFO=<ID=n_ref_count,Number=1,Type=Integer,Description="Normal ref count from sga if non-zero">
+##INFO=<ID=model_score,Number=1,Type=Float,Description="consensus model score, 0-1">
+##INFO=<ID=Variant_Classification,Number=1,Type=String,Description="Variant Classification">
+##FILTER=<ID=LOWSUPPORT,Description="Insufficient support in consensus model">
+##FILTER=<ID=NORMALPANEL,Description="Presence in Panel of Normals">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+1	2897557	.	CAACTTATATATT	C	.	LOWSUPPORT;NORMALPANEL	Callers=smufin;NumCallers=1;VAF=0.01887;t_alt_count=1;t_ref_count=52;model_score=0.401

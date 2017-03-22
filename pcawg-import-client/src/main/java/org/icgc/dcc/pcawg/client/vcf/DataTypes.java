@@ -21,18 +21,16 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public enum MutationTypes {
-  INSERTION_LTE_200BP("insertion of <=200bp"),
-  DELETION_LTE_200BP("deletion of <=200bp"),
-  SINGLE_BASE_SUBSTITUTION("single base substitution"),
-  MULTIPLE_BASE_SUBSTITUTION("multiple base substitution (>=2bp and <=200bp)"),
-  UNKNOWN("unknown");
+public enum DataTypes {
+  INDEL("indel"),
+  SNV_MNV("snv_mnv");
 
   @NonNull
   private final String name;
 
   @Override
   public String toString() {
-    return name;
+    return name();
   }
+
 }

@@ -19,19 +19,33 @@ package org.icgc.dcc.pcawg.client.config;
 
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.System.getProperty;
-import static org.icgc.dcc.pcawg.client.core.MiscNames.FALSE;
-import static org.icgc.dcc.pcawg.client.core.MiscNames.TRUE;
 
 public class ClientProperties {
 
+  private static final String FALSE = "false";
+
   public static final String STORAGE_API = "https://storage.cancercollaboratory.org";
   public static final String PORTAL_API = "https://dcc.icgc.org";
+  public static final boolean USE_HDFS = parseBoolean(getProperty("use_hdfs", FALSE));
   public static final String TOKEN = getProperty("token");
+  public static final String HDFS_ADDRESS = getProperty("hdfs_address","localhost");
+  public static final String HDFS_PORT = getProperty("hdfs_port","50075");
 
-  public static final String FETCHER_STORAGE_FILENAME = "allFileMetaDatas.dat";
-  public static final boolean FETCHER_FORCE_NEW_FILE = false;
-
-  public static final boolean STORAGE_PERSIST_MODE = parseBoolean(getProperty("persist_mode", TRUE));
+  public static final boolean STORAGE_PERSIST_MODE = parseBoolean(getProperty("persist_mode", FALSE));
   public static final String STORAGE_OUTPUT_VCF_STORAGE_DIR = "storedVCFs";
   public static final boolean STORAGE_BYPASS_MD5_CHECK = parseBoolean(getProperty("bypass_md5_check", FALSE));
+
+  public static final String UUID2BARCODE_SHEET_TSV_FILENAME = "pc_annotation-tcga_uuid2barcode.tsv";
+  public static final boolean UUID2BARCODE_SHEET_HAS_HEADER= true;
+  public static final String UUID2BARCODE_SHEET_TSV_URL = "https://raw.githubusercontent.com/ICGC-TCGA-PanCancer/pcawg-operations/develop/lists/"+UUID2BARCODE_SHEET_TSV_FILENAME;
+
+  public static final String SAMPLE_SHEET_TSV_FILENAME = "pcawg_sample_sheet.2016-10-18.tsv";
+  public static final boolean SAMPLE_SHEET_HAS_HEADER = true;
+  public static final String SAMPLE_SHEET_TSV_URL = "https://raw.githubusercontent.com/ICGC-TCGA-PanCancer/pcawg-operations/develop/lists/sample_sheet/"+SAMPLE_SHEET_TSV_FILENAME;
+
+  public static final String OUTPUT_TSV_DIRECTORY = "/tmp/tsvDir."+System.currentTimeMillis();
+  public static final String SSM_P_TSV_FILENAME = "ssm_p.txt";
+  public static final String SSM_M_TSV_FILENAME = "ssm_m.txt";
+
+
 }

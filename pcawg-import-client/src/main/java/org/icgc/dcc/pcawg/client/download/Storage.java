@@ -25,7 +25,7 @@ import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.model.metadata.FileMetaData;
+import org.icgc.dcc.pcawg.client.model.metadata.file.PortalMetadata;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,11 +41,11 @@ import static java.nio.file.Files.copy;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.STORAGE_API;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.TOKEN;
 
 @Value
 @Slf4j
 public class Storage {
+
 
   private final boolean persist;
 
@@ -57,17 +57,27 @@ public class Storage {
 
   private final boolean bypassMD5Check;
 
-  private static String createTempFilename() {
-    return "tmp." + System.currentTimeMillis() + ".vcf.gz";
+  private final String token;
+
+  private static Path createTempFile(Path outputDir){
+    val filename = "tmp." + System.currentTimeMillis() + ".vcf.gz";
+    val path = outputDir.resolve(filename);
+    path.toFile().deleteOnExit();
+    return path;
   }
 
-  public Storage(final boolean persist, @NonNull final String outputDirName, final boolean bypassMD5Check) {
+  public static Storage newStorage(final boolean persist, String outputDirName, final boolean bypassMD5Check, String token){
+    return new Storage(persist, outputDirName, bypassMD5Check, token);
+  }
+
+  private Storage(final boolean persist, @NonNull final String outputDirName, final boolean bypassMD5Check, String token) {
     this.bypassMD5Check = bypassMD5Check;
     this.persist = persist;
+    this.token = token;
     this.outputDir = Paths.get(outputDirName).toAbsolutePath();
     initDir(outputDir);
     this.currentTime = System.currentTimeMillis();
-    this.tempFile = outputDir.resolve(createTempFilename());
+    this.tempFile = createTempFile(outputDir);
   }
 
   @SneakyThrows
@@ -96,7 +106,7 @@ public class Storage {
 
   // Download file regardless of persist mode
   @SneakyThrows
-  private static File downloadFileByObjectId(@NonNull final String objectId, @NonNull final String filename) {
+  private File downloadFileByObjectId(@NonNull final String objectId, @NonNull final String filename) {
     val objectUrl = getObjectUrl(STORAGE_API,objectId);
     val output = Paths.get(filename);
 
@@ -108,10 +118,22 @@ public class Storage {
   }
 
   @SneakyThrows
-  public File downloadFile(@NonNull final FileMetaData fileMetaData) {
-    val objectId = fileMetaData.getObjectId();
-    val expectedMD5Sum = fileMetaData.getFileMd5sum();
-    val relativeFilename = fileMetaData.getVcfFilenameParser().getFilename();
+  public static File downloadFileByURL(@NonNull final String urlString, @NonNull final String outputFilename) {
+    val objectUrl = new URL(urlString);
+    val output = Paths.get(outputFilename);
+
+    @Cleanup
+    val input = objectUrl.openStream();
+    copy(input, output, REPLACE_EXISTING);
+
+    return output.toFile();
+  }
+
+  @SneakyThrows
+  public File downloadFile(@NonNull final PortalMetadata portalMetadata) {
+    val objectId = portalMetadata.getObjectId();
+    val expectedMD5Sum = portalMetadata.getFileMd5sum();
+    val relativeFilename = portalMetadata.getPortalFilename().getFilename();
     val relativeFile = Paths.get(relativeFilename);
     val absFile = outputDir.resolve(relativeFile).toAbsolutePath();
     val absFilename = absFile.toString();
@@ -143,13 +165,14 @@ public class Storage {
 
 
   @SneakyThrows
-  public static URL getObjectUrl(@NonNull final String api, @NonNull final String objectId) {
+  public URL getObjectUrl(@NonNull final String api, @NonNull final String objectId) {
     val storageUrl = new URL(api + "/download/" + objectId + "?offset=0&length=-1&external=true");
     val connection = (HttpURLConnection) storageUrl.openConnection();
-    connection.setRequestProperty(AUTHORIZATION, "Bearer " + TOKEN);
+    connection.setRequestProperty(AUTHORIZATION, "Bearer " + token);
     val object = readObject(connection);
     return getUrl(object);
   }
+
 
   @SneakyThrows
   private static URL getUrl(JsonNode object) {

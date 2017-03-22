@@ -17,45 +17,51 @@
  */
 package org.icgc.dcc.pcawg.client;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.config.ClientProperties;
-import org.icgc.dcc.pcawg.client.download.fetcher.FetcherFactory;
-import org.icgc.dcc.pcawg.client.download.fetcher.decorators.ConsensusOnlyFetcherDecorator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
-import java.util.Arrays;
-
-@Slf4j
 @SpringBootApplication
+@Slf4j
+@Configuration
+@EnableConfigurationProperties(ApplicationConfig.class)
 public class ClientMain implements CommandLineRunner {
 
+  @Autowired
+  private ApplicationConfig applicationConfig;
+
   @Override
+  @SneakyThrows
   public void run(String... args) {
-    log.info("****** PCAWG VCF Import Client ******");
-    log.info("Passed arguments: {}", Arrays.toString(args));
+    log.info("Args: {}", applicationConfig.toString());
 
-    val fetcher = FetcherFactory.builder()
-        .setAllFiles(ClientProperties.FETCHER_STORAGE_FILENAME, ClientProperties.FETCHER_FORCE_NEW_FILE)
-        .setLimit(15)
+    val importer = Importer.builder()
+        .token(applicationConfig.getToken())
+        .hdfsEnabled(applicationConfig.isHdfs())
+        .outputVcfDir(applicationConfig.getVcf_dir())
+        .persistVcfDownloads(applicationConfig.isPersist())
+        .bypassMD5Check(applicationConfig.isBypass_md5())
+        .outputTsvDir(applicationConfig.getTsv_dir())
+        .append(applicationConfig.isAppend())
+        .hdfsHostname(applicationConfig.getHdfs_hostname())
+        .hdfsPort(applicationConfig.getHdfs_port())
         .build();
-
-    val consensusOnlyFetcher = ConsensusOnlyFetcherDecorator.newConsensusOnlyFetcherDecorator(fetcher);
-    val fileMetaDataContext = consensusOnlyFetcher.fetch();
-    val storage = Factory.newStorage();
-    for (val fileMetaData : fileMetaDataContext){
-      log.info("Downloading: {}", fileMetaData.getVcfFilenameParser().getFilename());
-      val file = storage.downloadFile(fileMetaData);
-    }
-
-
+    importer.run();
 
   }
 
+
+
   public static void main(String... args) {
-    SpringApplication.run(ClientMain.class, args);
+    new SpringApplicationBuilder(ClientMain.class)
+        .addCommandLineProperties(true)
+        .run(args);
   }
 
 }
