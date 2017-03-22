@@ -23,7 +23,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 import java.util.Set;
+import java.util.function.Predicate;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
 import static org.icgc.dcc.common.core.util.stream.Streams.stream;
 
@@ -35,8 +37,10 @@ public enum WorkflowTypes {
   SANGER("sanger", set("Sanger variant call pipeline")),
   DKFZ_EMBL("dkfz", set("DKFZ/EMBL variant call pipeline")),
   BROAD("broad", set("Broad variant call pipeline")),
-  MUSE("muse", set("MUSE variant call pipeline") );
+  MUSE("muse", set("MUSE variant call pipeline") ),
+  UNKNOWN("unknown", set("UNKNOWN variant call pipeline") );
 
+  private static final boolean DEFAULT_NO_ERRORS_FLAG = false;
   private static Set<String> set(String ... strings){
     return stream(strings).collect(toImmutableSet());
   }
@@ -51,17 +55,47 @@ public enum WorkflowTypes {
     return this.getName().equals(name);
   }
 
-  public boolean isIn(@NonNull final String name) {
+  public boolean isAtBeginningOf(@NonNull final String name) {
     return name.matches("^" + this.getName() + ".*");
   }
 
-  public static WorkflowTypes parseString(String name){
+  public boolean isIn(@NonNull final String name) {
+    return name.contains(this.getName());
+  }
+
+  private static WorkflowTypes parse(String name, Predicate<WorkflowTypes> predicate){
     for (val v : values()){
-      if (v.equals(name)){
+      if (predicate.test(v)){
         return v;
       }
     }
-    throw new IllegalStateException(String.format("The name [%s] does exist in %s", name, WorkflowTypes.class.getName()));
+    return WorkflowTypes.UNKNOWN;
+  }
+
+  public static WorkflowTypes parseStartsWith(String name, boolean check){
+    val workflowType = parse(name, w -> w.isAtBeginningOf(name) );
+    if (check){
+      checkState(workflowType != WorkflowTypes.UNKNOWN, "%s does not contain a workflowType that starts with [%s]", WorkflowTypes.class.getName(), name);
+    }
+    return workflowType;
+  }
+
+  public static WorkflowTypes parseMatch(String name, boolean check){
+    val workflowType = parse(name, w -> w.equals(name) );
+    if (check) {
+      checkState(workflowType != WorkflowTypes.UNKNOWN, "The name [%s] does not match any workflowType name in %s", name,
+          WorkflowTypes.class.getName());
+    }
+    return workflowType;
+  }
+
+  public static WorkflowTypes parseContains(String name, boolean check){
+    val workflowType = parse(name, w -> w.isIn(name) );
+    if (check) {
+      checkState(workflowType != WorkflowTypes.UNKNOWN, "The name [%s] does exist in any of the workflowTypes in %s", name,
+          WorkflowTypes.class.getName());
+    }
+    return workflowType;
   }
 
   @Override

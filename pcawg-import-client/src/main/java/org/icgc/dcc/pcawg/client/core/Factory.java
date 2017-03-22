@@ -48,6 +48,16 @@ import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
 public class Factory {
 
   private static final boolean CREATE_DIRECTORY_IF_DNE = true;
+  private static final TSVConverter<SSMMetadata> SSM_METADATA_TSV_CONVERTER = new SSMMetadataTSVConverter();
+  private static final TSVConverter<SSMPrimary> SSM_PRIMARY_TSV_CONVERTER = new SSMPrimaryTSVConverter();
+
+  public static TransformerFactory<SSMMetadata> newSSMMetadataTransformerFactory(boolean useHdfs){
+    return TransformerFactory.newTransformerFactory(SSM_METADATA_TSV_CONVERTER, useHdfs);
+  }
+
+  public static TransformerFactory<SSMPrimary> newSSMPrimaryTransformerFactory(boolean useHdfs){
+    return TransformerFactory.newTransformerFactory(SSM_PRIMARY_TSV_CONVERTER, useHdfs);
+  }
 
   public static Storage newDefaultStorage() {
     log.info("Creating storage instance with persistMode: {}, outputDir: {}, and md5BypassEnable: {}",
@@ -90,7 +100,7 @@ public class Factory {
   }
 
 
-  private static <T> Transformer<T> newFilesystemTransformer(FileWriterContext context, TSVConverter<T> tsvConverter, final boolean useHdfs){
+  private static <T> Transformer<T> newFilesystemTransformer(PlainFileWriterContext context, TSVConverter<T> tsvConverter, final boolean useHdfs){
     if (useHdfs){
       log.info("Using HDFS transformer");
       return newHdfsTransformer( tsvConverter, context );
@@ -100,12 +110,12 @@ public class Factory {
     }
   }
 
-  public static Transformer<SSMPrimary> newSSMPrimaryTransformer(FileWriterContext context, final boolean useHdfs){
+  public static Transformer<SSMPrimary> newSSMPrimaryTransformer(PlainFileWriterContext context, final boolean useHdfs){
     log.info("Creating SSMPrimary Transformer for DccProjectCode [{}]", context.getDccProjectCode());
     return newFilesystemTransformer(context, new SSMPrimaryTSVConverter(), useHdfs);
   }
 
-  public static Transformer<SSMMetadata> newSSMMetadataTransformer(FileWriterContext context, final boolean useHdfs){
+  public static Transformer<SSMMetadata> newSSMMetadataTransformer(PlainFileWriterContext context, final boolean useHdfs){
     log.info("Creating SSMMetadata Transformer for DccProjectCode [{}]", context.getDccProjectCode());
     return newFilesystemTransformer(context, new SSMMetadataTSVConverter(), useHdfs);
   }
@@ -144,7 +154,7 @@ public class Factory {
   @SneakyThrows
   public static <T> Transformer<T> newLocalFileTransformer(
     @NonNull TSVConverter<T> tsvConverter,
-    @NonNull FileWriterContext context){
+    @NonNull PlainFileWriterContext context){
     val appendMode = context.isAppend();
     val localFileWriter = createDefaultLocalFileWriter(context);
     val doesFileExist = localFileWriter.isFileExistedPreviously();
@@ -155,7 +165,7 @@ public class Factory {
   @SneakyThrows
   public static <T> Transformer<T> newHdfsTransformer(
       @NonNull TSVConverter<T> tsvConverter,
-      @NonNull FileWriterContext context){
+      @NonNull PlainFileWriterContext context){
     val appendMode = context.isAppend();
     val hdfsFileWriter= createHdfsFileWriter(context);
     val doesFileExist = hdfsFileWriter.isFileExistedPreviously();
@@ -163,16 +173,17 @@ public class Factory {
     return newTransformer(tsvConverter, hdfsFileWriter, writeHeaderLineInitially);
   }
 
-  public static LocalFileWriter createDefaultLocalFileWriter(FileWriterContext context) throws IOException {
+  public static LocalFileWriter createDefaultLocalFileWriter(PlainFileWriterContext context) throws IOException {
     return newDefaultLocalFileWriter(context.getOutputFilename(),
         context.isAppend());
   }
 
-  public static HdfsFileWriter createHdfsFileWriter(FileWriterContext context) throws IOException {
+  public static HdfsFileWriter createHdfsFileWriter(PlainFileWriterContext context) throws IOException {
     return newDefaultHdfsFileWriter(context.getHostname(),
         context.getPort(),
         context.getOutputFilename(),
         context.isAppend() );
   }
+
 
 }

@@ -23,19 +23,24 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.icgc.dcc.pcawg.client.core.FileWriterContext;
+import org.icgc.dcc.pcawg.client.core.PlainFileWriterContext;
+import org.icgc.dcc.pcawg.client.core.PlainFileWriterContext.PlainFileWriterContextBuilder;
 import org.icgc.dcc.pcawg.client.download.Storage;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.SnvMnvPcawgSSMPrimary;
 import org.icgc.dcc.pcawg.client.vcf.DataTypes;
+import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME;
-import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_P_TSV_FILENAME;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME_PREFIX;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME_EXTENSION;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_P_TSV_FILENAME_PREFIX;
+import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_P_TSV_FILENAME_EXTENSION;
 import static org.icgc.dcc.pcawg.client.core.Factory.newMetadataContainer;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadata;
-import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadataTransformer;
-import static org.icgc.dcc.pcawg.client.core.Factory.newSSMPrimaryTransformer;
+import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadataTransformerFactory;
+import static org.icgc.dcc.pcawg.client.core.Factory.newSSMPrimaryTransformerFactory;
 import static org.icgc.dcc.pcawg.client.model.ssm.primary.impl.IndelPcawgSSMPrimary.newIndelSSMPrimary;
+import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
 
 @Slf4j
 @Builder
@@ -63,29 +68,37 @@ public class Importer implements Runnable {
 
   private final boolean append;
 
-  private FileWriterContext.FileWriterContextBuilder createFileWriterContextBuilder(String dccProjectCode){
-    return FileWriterContext.builder()
+  // 1. now need to remove these members, and just make ssm_type_enum (with SSM_M and SMM_P), and then this method
+
+  private PlainFileWriterContextBuilder createPlainFileWriterContextBuilder(WorkflowTypes workflowType, String dccProjectCode){
+    return PlainFileWriterContext.builder()
         .dccProjectCode(dccProjectCode)
+        .workflowType(workflowType)
         .outputDirectory(outputTsvDir)
         .hostname(hdfsHostname)
         .port(hdfsPort)
         .append(append);
   }
-  private FileWriterContext createSSMPrimaryFileWriterContext(String dccProjectCode){
-    return createFileWriterContextBuilder(dccProjectCode)
-        .outputTsvFilename(SSM_P_TSV_FILENAME)
+  private PlainFileWriterContext createSSMPrimaryFileWriterContext(WorkflowTypes workflowType, String dccProjectCode){
+    return createPlainFileWriterContextBuilder(workflowType, dccProjectCode)
+        .fileNamePrefix(SSM_P_TSV_FILENAME_PREFIX)
+        .fileExtension(SSM_P_TSV_FILENAME_EXTENSION)
         .build();
   }
 
-  private FileWriterContext createSSMMetadataFileWriterContext(String dccProjectCode){
-    return createFileWriterContextBuilder(dccProjectCode)
-        .outputTsvFilename(SSM_M_TSV_FILENAME)
+  private PlainFileWriterContext createSSMMetadataFileWriterContext(WorkflowTypes workflowType, String dccProjectCode){
+    return createPlainFileWriterContextBuilder(workflowType, dccProjectCode)
+        .fileNamePrefix(SSM_M_TSV_FILENAME_PREFIX)
+        .fileExtension(SSM_M_TSV_FILENAME_EXTENSION)
         .build();
   }
 
   @Override
   @SneakyThrows
   public void run() {
+    val ssmMConsensusTransformerFactory = newSSMMetadataTransformerFactory(hdfsEnabled);
+    val ssmPConsensusTransformerFactory = newSSMPrimaryTransformerFactory(hdfsEnabled);
+
     // Create container with all MetadataContexts
     val metadataContainer = newMetadataContainer();
 
@@ -102,12 +115,12 @@ public class Importer implements Runnable {
       log.info("Processing DccProjectCode ( {} / {} ): {}", ++countDccProjectCodes, totalDccProjectCodes, dccProjectCode);
 
       //Create FileWriterContexts for this dccProjectCode
-      val ssmPrimaryFileWriterContext = createSSMPrimaryFileWriterContext(dccProjectCode);
-      val ssmMetadataFileWriterContext = createSSMMetadataFileWriterContext(dccProjectCode);
+      val ssmPConsensusFWContext = createSSMPrimaryFileWriterContext(CONSENSUS,dccProjectCode);
+      val ssmMConsensusFWContext = createSSMMetadataFileWriterContext(CONSENSUS,dccProjectCode);
 
       //Create transformers for this dccProjectCode
-      val ssmPrimaryTransformer  = newSSMPrimaryTransformer(ssmPrimaryFileWriterContext, hdfsEnabled);
-      val ssmMetadataTransformer = newSSMMetadataTransformer(ssmMetadataFileWriterContext,hdfsEnabled);
+      val ssmPConsensusTransformer  = ssmPConsensusTransformerFactory.getTransformer(ssmPConsensusFWContext);
+      val ssmMConsensusTransformer = ssmMConsensusTransformerFactory.getTransformer(ssmMConsensusFWContext);
 
       for (val metadataContext : metadataContainer.getMetadataContexts(dccProjectCode)){
         val sampleMetadata = metadataContext.getSampleMetadata();
@@ -122,7 +135,7 @@ public class Importer implements Runnable {
 
         //Write SSM Metadata to file
         val ssmMetadata = newSSMMetadata(sampleMetadata);
-        ssmMetadataTransformer.transform(ssmMetadata);
+        ssmMConsensusTransformer.transform(ssmMetadata);
 
         // Write SSM Primary to file
         val vcf = new VCFFileReader(file, REQUIRE_INDEX_CFG);
@@ -142,11 +155,11 @@ public class Importer implements Runnable {
             } else {
               throw new IllegalStateException("The dataType "+dataType.getName()+" is unrecognized");
             }
-          ssmPrimaryTransformer.transform(ssmPrimary);
+          ssmPConsensusTransformer.transform(ssmPrimary);
         }
       }
-      ssmPrimaryTransformer.close();
-      ssmMetadataTransformer.close();
+      ssmPConsensusTransformer.close();
+      ssmMConsensusTransformer.close();
     }
   }
 
