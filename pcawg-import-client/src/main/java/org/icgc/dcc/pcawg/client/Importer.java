@@ -28,6 +28,7 @@ import org.icgc.dcc.pcawg.client.core.FileWriterContextFactory;
 import org.icgc.dcc.pcawg.client.download.Storage;
 import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
+import org.icgc.dcc.pcawg.client.vcf.ConsensusVCFConverter;
 import org.icgc.dcc.pcawg.client.vcf.DataTypes;
 
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME_EXTENSION;
@@ -66,7 +67,6 @@ public class Importer implements Runnable {
   @NonNull
   private final String hdfsPort;
 
-  private final boolean append;
 
   // 1. now need to remove these members, and just make ssm_type_enum (with SSM_M and SMM_P), and then this method
 
@@ -75,7 +75,7 @@ public class Importer implements Runnable {
         .outputDirectory(outputTsvDir)
         .fileNamePrefix(SSM_P_TSV_FILENAME_PREFIX)
         .fileExtension(SSM_P_TSV_FILENAME_EXTENSION)
-        .append(append)
+        .append(true)
         .hostname(hdfsHostname)
         .port(hdfsPort)
         .build();
@@ -86,7 +86,7 @@ public class Importer implements Runnable {
         .outputDirectory(outputTsvDir)
         .fileNamePrefix(SSM_M_TSV_FILENAME_PREFIX)
         .fileExtension(SSM_M_TSV_FILENAME_EXTENSION)
-        .append(append)
+        .append(true)
         .hostname(hdfsHostname)
         .port(hdfsPort)
         .build();
@@ -95,6 +95,43 @@ public class Importer implements Runnable {
   @Override
   @SneakyThrows
   public void run() {
+    val consensusVCFConverter = buildConsensusVCFConverter();
+    // Create container with all MetadataContexts
+    val metadataContainer = newMetadataContainer();
+
+    // Create storage manager for downloading files
+    val storage = Storage.newStorage(persistVcfDownloads, outputVcfDir, bypassMD5Check, token);
+
+    val totalMetadataContexts = metadataContainer.getTotalMetadataContexts();
+    int countMetadataContexts = 0;
+
+    val totalDccProjectCodes = metadataContainer.getDccProjectCodes().size();
+    int countDccProjectCodes  = 0;
+
+    // Loop through each dccProjectCode
+    for (val dccProjectCode : metadataContainer.getDccProjectCodes()) {
+      log.info("Processing DccProjectCode ( {} / {} ): {}",
+          ++countDccProjectCodes, totalDccProjectCodes, dccProjectCode);
+
+      // Loop through each file for a particular dccProjectCode
+      for (val metadataContext : metadataContainer.getMetadataContexts(dccProjectCode)) {
+        val portalMetadata = metadataContext.getPortalMetadata();
+
+        log.info("Loading File ( {} / {} ): {}",
+            ++countMetadataContexts, totalMetadataContexts, portalMetadata.getPortalFilename().getFilename());
+
+        // Download vcfFile
+        val vcfFile = storage.downloadFile(portalMetadata);
+
+        //Write SSM Metadata to vcfFile
+        val sampleMetadata = metadataContext.getSampleMetadata();
+        consensusVCFConverter.process(vcfFile, sampleMetadata);
+      }
+    }
+  }
+
+  @SneakyThrows
+  public void run2() {
     val ssmMetadataTransformerFactory = newSSMMetadataTransformerFactory(hdfsEnabled);
     val ssmMetadataFWCtxFactory = buildSSMMetadataFWCtxFactory();
 
@@ -151,6 +188,20 @@ public class Importer implements Runnable {
       ssmPConsensusTransformer.close();
       ssmMConsensusTransformer.close();
     }
+  }
+
+  private ConsensusVCFConverter buildConsensusVCFConverter(){
+    val metadataTransformerFactory = newSSMMetadataTransformerFactory(hdfsEnabled);
+    val metadataFWCtxFactory = buildSSMMetadataFWCtxFactory();
+
+    val primaryTransformerFactory = newSSMPrimaryTransformerFactory(hdfsEnabled);
+    val primaryFWCtxFactory = buildSSMPrimaryFWCtxFactory();
+    return ConsensusVCFConverter.builder()
+        .metadataFWCtxFactory(metadataFWCtxFactory)
+        .metadataTransformerFactory(metadataTransformerFactory)
+        .primaryFWCtxFactory(primaryFWCtxFactory)
+        .primaryTransformerFactory(primaryTransformerFactory)
+        .build();
   }
 
   private static SSMPrimary buildSSMPrimary(SampleMetadata sampleMetadata, VariantContext variant){

@@ -48,7 +48,6 @@ public class ClientMain implements CommandLineRunner {
         .persistVcfDownloads(applicationConfig.isPersist())
         .bypassMD5Check(applicationConfig.isBypass_md5())
         .outputTsvDir(applicationConfig.getTsv_dir())
-        .append(applicationConfig.isAppend())
         .hdfsHostname(applicationConfig.getHdfs_hostname())
         .hdfsPort(applicationConfig.getHdfs_port())
         .build();
