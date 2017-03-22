@@ -29,10 +29,8 @@ public class TransformerFactory<T> {
 
   public final Transformer<T> getTransformer(FileWriterContext context){
     if (useHdfs){
-      log.info("Using HDFS transformer");
       return newHdfsTransformer(context);
     } else {
-      log.info("Using LOCAL transformer");
       return newLocalFileTransformer(context);
     }
   }
