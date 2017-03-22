@@ -32,17 +32,17 @@ public enum VariationCallingAlgorithms {
 
   private static final String CLASS_NAME = VariationCallingAlgorithms.class.getName();
 
-  VariationCallingAlgorithms(@NonNull String text, final WorkflowTypes workflowType, @NonNull Set<DataTypes> dataTypes) {
-    dataTypes.forEach(x -> add(workflowType, x, text));
-  }
+  private static Map<WorkflowTypes, Map<DataTypes, String>> workflowMap;
 
   private static Set<DataTypes> set(DataTypes ... dataTypes){
     return stream(dataTypes).collect(toImmutableSet());
   }
 
-  private static Map<WorkflowTypes, Map<DataTypes, String>> workflowMap = newEnumMap(WorkflowTypes.class);
-
   private static void add(WorkflowTypes workflowType, DataTypes dataType, String text){
+    // Lazy initialization
+    if (workflowMap == null){
+      workflowMap = newEnumMap(WorkflowTypes.class);
+    }
     if (!workflowMap.containsKey(workflowType)){
       workflowMap.put(workflowType, newEnumMap(DataTypes.class));
     }
@@ -59,6 +59,10 @@ public enum VariationCallingAlgorithms {
     checkArgument(dataTypeMap.containsKey(dataType),
         "The dataType [%s] is not defined for workflowType [%s] in %s", dataType, workflowType, CLASS_NAME);
     return dataTypeMap.get(dataType);
+  }
+
+  VariationCallingAlgorithms(@NonNull String text, final WorkflowTypes workflowType, @NonNull Set<DataTypes> dataTypes) {
+    dataTypes.forEach(x -> add(workflowType, x, text));
   }
 
 }

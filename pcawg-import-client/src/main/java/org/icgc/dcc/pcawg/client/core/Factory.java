@@ -16,6 +16,7 @@ import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
 import org.icgc.dcc.pcawg.client.tsv.TSVConverter;
 import org.icgc.dcc.pcawg.client.tsv.impl.SSMMetadataTSVConverter;
 import org.icgc.dcc.pcawg.client.tsv.impl.SSMPrimaryTSVConverter;
+import org.icgc.dcc.pcawg.client.vcf.VariationCallingAlgorithms;
 import org.icgc.dcc.pcawg.client.vcf.WorkflowTypes;
 
 import java.nio.file.Paths;
@@ -82,9 +83,11 @@ public class Factory {
   }
 
   public static SSMMetadata newSSMMetadata(SampleMetadata sampleMetadata){
+    val workflowType = sampleMetadata.getWorkflowType();
+    val dataType = sampleMetadata.getDataType();
     return PcawgSSMMetadata.newSSMMetadataImpl(
-        sampleMetadata.getWorkflowType().getName(),
-        sampleMetadata.getDataType().getName(),
+        VariationCallingAlgorithms.get(workflowType, dataType),
+        dataType.getName(),
         sampleMetadata.getMatchedSampleId(),
         sampleMetadata.getAnalysisId(),
         sampleMetadata.getAnalyzedSampleId(),

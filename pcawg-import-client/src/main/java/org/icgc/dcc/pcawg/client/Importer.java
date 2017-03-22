@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.pcawg.client;
 
+import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
 import lombok.Builder;
 import lombok.NonNull;
@@ -25,8 +26,8 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.core.FileWriterContextFactory;
 import org.icgc.dcc.pcawg.client.download.Storage;
+import org.icgc.dcc.pcawg.client.model.metadata.project.SampleMetadata;
 import org.icgc.dcc.pcawg.client.model.ssm.primary.SSMPrimary;
-import org.icgc.dcc.pcawg.client.model.ssm.primary.impl.SnvMnvPcawgSSMPrimary;
 import org.icgc.dcc.pcawg.client.vcf.DataTypes;
 
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME_EXTENSION;
@@ -38,6 +39,7 @@ import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadata;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadataTransformerFactory;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMPrimaryTransformerFactory;
 import static org.icgc.dcc.pcawg.client.model.ssm.primary.impl.IndelPcawgSSMPrimary.newIndelSSMPrimary;
+import static org.icgc.dcc.pcawg.client.model.ssm.primary.impl.SnvMnvPcawgSSMPrimary.newSnvMnvSSMPrimary;
 import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
 
 @Slf4j
@@ -111,55 +113,57 @@ public class Importer implements Runnable {
     val totalDccProjectCodes = metadataContainer.getDccProjectCodes().size();
     int countDccProjectCodes  = 0;
 
+    // Loop through each dccProjectCode
     for (val dccProjectCode : metadataContainer.getDccProjectCodes()){
-      log.info("Processing DccProjectCode ( {} / {} ): {}", ++countDccProjectCodes, totalDccProjectCodes, dccProjectCode);
+      log.info("Processing DccProjectCode ( {} / {} ): {}",
+          ++countDccProjectCodes, totalDccProjectCodes, dccProjectCode);
 
       //Create Consensus FileWriterContexts for this dccProjectCode
-      val ssmPConsensusFWContext = ssmPrimaryFWCtxFactory.getFileWriterContext(CONSENSUS,dccProjectCode);
+      val ssmPConsensusFWContext = ssmPrimaryFWCtxFactory.getFileWriterContext(CONSENSUS, dccProjectCode);
       val ssmMConsensusFWContext = ssmMetadataFWCtxFactory.getFileWriterContext(CONSENSUS, dccProjectCode);
 
       //Create Consensus transformers for this dccProjectCode
       val ssmPConsensusTransformer  = ssmPrimaryTransformerFactory.getTransformer(ssmPConsensusFWContext);
       val ssmMConsensusTransformer = ssmMetadataTransformerFactory.getTransformer(ssmMConsensusFWContext);
 
+      // Loop through each file for a particular dccProjectCode
       for (val metadataContext : metadataContainer.getMetadataContexts(dccProjectCode)){
-        val sampleMetadata = metadataContext.getSampleMetadata();
         val portalMetadata = metadataContext.getPortalMetadata();
+
+        log.info("Loading File ( {} / {} ): {}",
+            ++countMetadataContexts, totalMetadataContexts, portalMetadata.getPortalFilename().getFilename());
 
         // Download file
         val file = storage.downloadFile(portalMetadata);
 
-        val dataType = sampleMetadata.getDataType();
-
-        log.info("Loading File ( {} / {} ): {}", ++countMetadataContexts, totalMetadataContexts, portalMetadata.getPortalFilename().getFilename());
-
         //Write SSM Metadata to file
+        val sampleMetadata = metadataContext.getSampleMetadata();
         val ssmMetadata = newSSMMetadata(sampleMetadata);
         ssmMConsensusTransformer.transform(ssmMetadata);
 
         // Write SSM Primary to file
         val vcf = new VCFFileReader(file, REQUIRE_INDEX_CFG);
         for (val variant : vcf){
-          SSMPrimary ssmPrimary = null;
-          //TODO: clean up this hardcoding. Create VCF class that does this conversion and processing, and ecapsulated this logic
-            if (dataType == DataTypes.INDEL){
-              ssmPrimary = newIndelSSMPrimary(
-                          variant,
-                          sampleMetadata.getAnalysisId(),
-                          sampleMetadata.getAnalyzedSampleId());
-            } else if(dataType == DataTypes.SNV_MNV){
-              ssmPrimary = SnvMnvPcawgSSMPrimary.newSnvMnvSSMPrimary(
-                  variant,
-                  sampleMetadata.getAnalysisId(),
-                  sampleMetadata.getAnalyzedSampleId());
-            } else {
-              throw new IllegalStateException("The dataType "+dataType.getName()+" is unrecognized");
-            }
+          val ssmPrimary = buildSSMPrimary(sampleMetadata, variant);
           ssmPConsensusTransformer.transform(ssmPrimary);
         }
       }
       ssmPConsensusTransformer.close();
       ssmMConsensusTransformer.close();
+    }
+  }
+
+  private static SSMPrimary buildSSMPrimary(SampleMetadata sampleMetadata, VariantContext variant){
+    val dataType = sampleMetadata.getDataType();
+    val analysisId = sampleMetadata.getAnalysisId();
+    val analyzedSampleId = sampleMetadata.getAnalyzedSampleId();
+
+    if (dataType == DataTypes.INDEL){
+      return newIndelSSMPrimary(variant, analysisId, analyzedSampleId);
+    } else if(dataType == DataTypes.SNV_MNV){
+      return newSnvMnvSSMPrimary(variant, analysisId, analyzedSampleId);
+    } else {
+      throw new IllegalStateException("The dataType "+dataType.getName()+" is unrecognized");
     }
   }
 
