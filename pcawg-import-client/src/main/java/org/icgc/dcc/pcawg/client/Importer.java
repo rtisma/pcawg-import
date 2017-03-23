@@ -23,9 +23,9 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.pcawg.client.core.FileWriterContextFactory;
-import org.icgc.dcc.pcawg.client.download.Storage;
 import org.icgc.dcc.pcawg.client.vcf.ConsensusVCFConverter;
 
+import static org.icgc.dcc.common.core.util.Joiners.PATH;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME_EXTENSION;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_M_TSV_FILENAME_PREFIX;
 import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_P_TSV_FILENAME_EXTENSION;
@@ -33,6 +33,7 @@ import static org.icgc.dcc.pcawg.client.config.ClientProperties.SSM_P_TSV_FILENA
 import static org.icgc.dcc.pcawg.client.core.Factory.newMetadataContainer;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMMetadataTransformerFactory;
 import static org.icgc.dcc.pcawg.client.core.Factory.newSSMPrimaryTransformerFactory;
+import static org.icgc.dcc.pcawg.client.download.Storage.newStorage;
 
 @Slf4j
 @Builder
@@ -105,8 +106,6 @@ public class Importer implements Runnable {
     // Create container with all MetadataContexts
     val metadataContainer = newMetadataContainer();
 
-    // Create storage manager for downloading files
-    val storage = Storage.newStorage(persistVcfDownloads, outputVcfDir, bypassMD5Check, token);
 
     val totalMetadataContexts = metadataContainer.getTotalMetadataContexts();
     int countMetadataContexts = 0;
@@ -118,6 +117,10 @@ public class Importer implements Runnable {
     for (val dccProjectCode : metadataContainer.getDccProjectCodes()) {
       log.info("Processing DccProjectCode ( {} / {} ): {}",
           ++countDccProjectCodes, totalDccProjectCodes, dccProjectCode);
+
+      // Create storage manager for downloading files
+      val vcfDownloadDirectory = PATH.join(outputVcfDir, dccProjectCode);
+      val storage = newStorage(persistVcfDownloads, vcfDownloadDirectory , bypassMD5Check, token);
 
       // Loop through each file for a particular dccProjectCode
       for (val metadataContext : metadataContainer.getMetadataContexts(dccProjectCode)) {
