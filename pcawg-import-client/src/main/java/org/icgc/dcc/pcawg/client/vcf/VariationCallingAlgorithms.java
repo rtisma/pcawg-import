@@ -17,6 +17,8 @@ import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.CONSENSUS;
 import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.DKFZ_EMBL;
 import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.MUSE;
 import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.SANGER;
+import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.SMUFIN;
+import static org.icgc.dcc.pcawg.client.vcf.WorkflowTypes.UNKNOWN;
 
 /**
  * Rules for resolving the variantion_calling_algorithm text for a given workflowType and dataType
@@ -28,7 +30,9 @@ public enum VariationCallingAlgorithms {
   SANGER_PIPELINE("Sanger variant call pipeline", SANGER, set(SNV_MNV, INDEL)),
   DKFZ_EMBL_PIPELINE("DKFS/EMBL variant call pipeline", DKFZ_EMBL, set(SNV_MNV, INDEL)),
   MUSE_PIPELINE("Muse variant call pipeline", MUSE, set(SNV_MNV, INDEL)),
-  BROAD_PIPELINE("Broad variant call pipeline", BROAD, set(SNV_MNV, INDEL));
+  BROAD_PIPELINE("Broad variant call pipeline", BROAD, set(SNV_MNV, INDEL)),
+  SMUFIN_PIPELINE("SMUFIN variant call pipeline", SMUFIN, set(SNV_MNV, INDEL)),
+  UNKNOWN_PIPELINE("Unknown variant call pipeline", UNKNOWN, set(SNV_MNV, INDEL));
 
   private static final String CLASS_NAME = VariationCallingAlgorithms.class.getName();
 

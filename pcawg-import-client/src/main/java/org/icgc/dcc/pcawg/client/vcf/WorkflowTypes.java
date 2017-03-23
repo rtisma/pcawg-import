@@ -38,6 +38,7 @@ public enum WorkflowTypes {
   DKFZ_EMBL("dkfz", set("DKFZ/EMBL variant call pipeline")),
   BROAD("broad", set("Broad variant call pipeline")),
   MUSE("muse", set("MUSE variant call pipeline") ),
+  SMUFIN("smufin", set("SMUFIN variant call pipeline") ),
   UNKNOWN("unknown", set("UNKNOWN variant call pipeline") );
 
   private static final boolean DEFAULT_NO_ERRORS_FLAG = false;
